@@ -4,7 +4,7 @@
 // Checks for /privacy, /api/register and /api/email-retry are added when those exist (M1/M2). Run after every deploy:
 //   node scripts/smoke.mjs https://wives-hangout.vercel.app
 //   VERCEL_BYPASS=<secret> node scripts/smoke.mjs https://<preview>.vercel.app
-// It never creates a registration.
+// It never creates a registration (it only sends an empty body).
 
 const base = (process.argv[2] ?? '').replace(/\/$/, '')
 if (!base.startsWith('http')) {
@@ -73,6 +73,18 @@ await check('/api/status answers', async () => {
   const body = await r.json()
   expect(r.status === 200 && ['open', 'not_open', 'closed'].includes(body.state), `HTTP ${r.status} ${JSON.stringify(body)}`)
   return `state=${body.state}`
+})
+
+await check('/api/register runs (no crash) and rejects an empty body', async () => {
+  const r = await get('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+  expect(r.status !== 500 && r.status < 600, `HTTP ${r.status}: the function crashed (check the Vercel logs)`)
+  expect([400, 403, 429, 503, 200].includes(r.status), `unexpected HTTP ${r.status}`)
+  return `HTTP ${r.status}`
+})
+
+await check('/api/email-retry refuses without the secret', async () => {
+  const r = await get('/api/email-retry', { method: 'POST' })
+  expect(r.status === 401, `HTTP ${r.status}`)
 })
 
 console.log(failed ? `\n${failed} check(s) FAILED` : '\nAll checks passed')

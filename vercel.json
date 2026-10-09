@@ -4,6 +4,14 @@
   "regions": [
     "lhr1"
   ],
+  "functions": {
+    "api/register.ts": {
+      "maxDuration": 30
+    },
+    "api/email-retry.ts": {
+      "maxDuration": 60
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
