@@ -90,3 +90,11 @@
   - CSS inlined; sitemap/robots generated; real 404s
 - **Lighthouse (preview, mobile, 3 runs):** Performance 89 / 94 / 76 (CPU noise; LCP 2.6s, CLS ≤ 0.03); Accessibility 100. Best Practices 93 and SEO 0 are preview-only: Vercel's toolbar script is blocked by our CSP, and previews send `x-robots-tag: noindex`. Re-check on production.
 - **Readiness:** `docs/ADMIN_GUIDE.md` (alerts, Sheet, deletions, closing time, rollback, backups, after-event deletion by 24 Jan 2027); CSV export verified against the live schema (`--event` required).
+
+## 2026-10-09 · M5 LAUNCH: production open (CONFIG)
+- **Production env** (builder): 8 variables, Production only (checked by name/environment; values never printed). `RETRY_SECRET` is a fresh production value (`.env.prod-secrets`, git-ignored), also in the Sheet's Script Properties with `RETRY_URL`.
+- **Note:** the earlier Preview variables were moved (not copied) to Production, so **Preview is now unconfigured** (shows "opens soon"). Re-add the Preview set before the next preview test.
+- **Pushed `main` → production open:** `/api/status` = open, which proves `EVENT_SLUG` is the production slug and `EMAIL_MODE=smtp` (the guard refuses anything else in production).
+- **Smoke (production): 10/10.** `/api/email-retry` with the production secret: 200. No `x-robots-tag` on production.
+- **Lighthouse (production, mobile):** run 1 (cold CDN right after deploy) Perf 48; runs 2–3 **Perf 91 / 94**, **A11y 100, Best Practices 96, SEO 100**, LCP 1.9–2.2s, CLS ≤ 0.03.
+- **Next:** builder's real registration on mobile data (inbox + images + Sheet row) → delete that row → Facebook "Scrape Again".
