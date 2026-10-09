@@ -22,3 +22,6 @@
   - Link preview `public/og.jpg` + `scripts/make-og.py`; Event JSON-LD, robots.txt, sitemap.xml
   - `.env.example`, `.env.local` (dev slug, log mode, secrets empty); fixed a copied `.gitignore` line that ignored `.env.example`
 - **Checks:** typecheck, lint clean; 11 tests; build + prerender OK; `npm audit` 0; 360px and desktop screenshots, no horizontal scroll, no console errors.
+- **Vercel:** project `wives-hangout` created in `asejiks-projects` (same scope as The Awakening) and connected to the GitHub repo. First production deploy pending (the deploy command needs the builder's go-ahead in this session).
+- **QR tooling:** `scripts/make-qr.mjs` (level H, wine modules on ivory, church logo plate ≈12% of the code). Its libraries stay out of the app's dependencies. A dry run with a stand-in URL decoded at 2520/1500/1000/600/300/200/140px and on a blurred, rotated, darker copy.
+- **Next:** first production deploy → smoke check → final QR from the real URL. Then M1.
