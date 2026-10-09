@@ -108,9 +108,9 @@ export function Confirmation() {
                 height="112"
                 className="mx-auto mt-4 block h-auto w-[240px] max-w-full"
               />
-              <Text className="m-0 mt-4 text-[13px] font-bold uppercase leading-[18px] tracking-[2px] text-rose">{EVENT.theme}</Text>
-              <Text className="m-0 mt-1 text-[13px] font-bold uppercase leading-[18px] tracking-[2px] text-[#FFFFFF]">
-                {EVENT.date} · {EVENT.time}
+              <Text className="m-0 mt-4 text-[13px] font-bold uppercase leading-[18px] tracking-[1px] text-rose">{EVENT.theme}</Text>
+              <Text className="m-0 mt-1 text-[13px] font-bold uppercase leading-[18px] tracking-[1px] text-[#FFFFFF]">
+                {EVENT.date.replace('Saturday, ', 'Sat ')} · {EVENT.time}
               </Text>
             </Section>
 

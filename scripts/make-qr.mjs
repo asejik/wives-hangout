@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Branded registration QR: error correction H, solid (touching) modules, a centre logo plate covering
-// about 11% of the code, wine modules on ivory. Then it proves the result decodes (jsQR) at print and
+// about 12% of the code, burgundy modules and magenta eyes on white (the flyer's colours). Then it proves the result decodes (jsQR) at print and
 // thumbnail sizes, plus a blurred, rotated "phone photo" copy. Exits non-zero if any decode fails.
 //
 // Its libraries are kept out of the app's dependencies: install them in a scratch folder and point at it.
 //   mkdir -p /tmp/qr-tool && (cd /tmp/qr-tool && npm init -y && npm i qrcode@1.5.4 jsqr@1.4.0 sharp@0.34.3)
-//   QR_TOOL_DIR=/tmp/qr-tool node scripts/make-qr.mjs https://<production-url>/?src=qr brand/clc-logo.png docs/launch/wives-hangout-qr.png
-// Colours mirror src/styles/theme.css (re-run with the flyer logo and palette in M3).
+//   QR_TOOL_DIR=/tmp/qr-tool node scripts/make-qr.mjs https://wives-hangout.vercel.app/?src=qr brand/clc-logo-white.png docs/launch/wives-hangout-qr.png
+// Colours mirror src/styles/theme.css. The logo should be the white variant: it sits on a burgundy plate.
 
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
@@ -21,7 +21,7 @@ const QRCode = require('qrcode')
 const jsQR = require('jsqr')
 const sharp = require('sharp')
 
-const C = { light: '#FBF5EE', dark: '#5A1A30', eye: '#7A571B', plateBorder: '#D4AF62' }
+const C = { light: '#FFFFFF', dark: '#68001F', eye: '#C82070', plate: '#68001F', plateBorder: '#FFFFFF' }
 const SIZE = 2520
 const QUIET = 4 // modules of quiet zone on each side
 
@@ -45,7 +45,7 @@ for (let r = 0; r < n; r++) {
   }
 }
 
-// Finder eyes: wine outer ring, gold-700 centre.
+// Finder eyes: burgundy outer ring, magenta centre.
 const eye = (r, c) => {
   const x = at(c), y = at(r)
   return (
@@ -59,10 +59,10 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${S
 <rect width="100%" height="100%" fill="${C.light}"/>
 <g fill="${C.dark}">${rects}</g>
 ${eye(0, 0)}${eye(0, n - 7)}${eye(n - 7, 0)}
-<rect x="${plateX + cell * 0.4}" y="${plateX + cell * 0.4}" width="${plateSide - cell * 0.8}" height="${plateSide - cell * 0.8}" rx="${cell * 1.6}" fill="${C.light}" stroke="${C.plateBorder}" stroke-width="${cell * 0.35}"/>
+<rect x="${plateX + cell * 0.4}" y="${plateX + cell * 0.4}" width="${plateSide - cell * 0.8}" height="${plateSide - cell * 0.8}" rx="${cell * 1.6}" fill="${C.plate}" stroke="${C.plateBorder}" stroke-width="${cell * 0.5}"/>
 </svg>`
 
-const logoBox = Math.round(plateSide * 0.74)
+const logoBox = Math.round(plateSide * 0.7)
 const logo = await sharp(logoPath).trim().resize(logoBox, logoBox, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer()
 const offset = Math.round(plateX + (plateSide - logoBox) / 2)
 const png = await sharp(Buffer.from(svg)).composite([{ input: logo, left: offset, top: offset }]).png().toBuffer()

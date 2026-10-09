@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-// Checks a DEPLOYED site (P03 R-01): the things local tests can't see, like Node ESM resolution on
-// Vercel, headers, generated SEO files.
-// Checks for /privacy, /api/register and /api/email-retry are added when those exist (M1/M2). Run after every deploy:
+// Checks a DEPLOYED site: the things local tests can't see, like Node ESM resolution on Vercel,
+// headers, generated SEO files and the pre-rendered pages. Run after every deploy:
 //   node scripts/smoke.mjs https://wives-hangout.vercel.app
 //   VERCEL_BYPASS=<secret> node scripts/smoke.mjs https://<preview>.vercel.app
 // It never creates a registration (it only sends an empty body).
@@ -35,7 +34,7 @@ await check('home page is pre-rendered with title, og:image and Event JSON-LD', 
   expect(html.includes('<title>'), 'no <title>')
   expect(/og:image" content="https:\/\//.test(html), 'og:image missing or not absolute')
   expect(html.includes('"@type":"Event"'), 'no Event JSON-LD')
-  expect(html.includes('Wives Hangout</h1>'), 'content not in raw HTML')
+  expect(html.includes('alt="Wives Hangout"') && html.includes('Marriage, Motherhood and Ministry'), 'content not in raw HTML')
 })
 
 await check('security headers', async () => {
@@ -44,6 +43,12 @@ await check('security headers', async () => {
     (h) => !r.headers.get(h),
   )
   expect(missing.length === 0, `missing: ${missing.join(', ')}`)
+})
+
+await check('/privacy loads (pre-rendered)', async () => {
+  const r = await get('/privacy')
+  const html = await r.text()
+  expect(r.status === 200 && html.includes('Privacy notice') && html.includes('24 January 2027'), `HTTP ${r.status}`)
 })
 
 await check('og.jpg is served as an image', async () => {

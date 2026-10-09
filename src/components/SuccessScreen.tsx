@@ -35,7 +35,7 @@ export function SuccessScreen({ values, onBack }: { values: Registration; onBack
           <p className="mt-4 flex items-start gap-2.5 rounded-md bg-petal px-4 py-3 text-left font-text text-small text-ink">
             <MailCheck aria-hidden size={20} strokeWidth={2} className="mt-0.5 shrink-0 text-magenta-700" />
             <span>
-              We've emailed a copy to <b className="font-semibold break-all">{d.email}</b>. Check your inbox (and your spam folder).
+              We've emailed a copy to <b className="font-semibold [overflow-wrap:anywhere]">{d.email}</b>. Check your inbox (and your spam folder).
             </span>
           </p>
         </div>
@@ -46,14 +46,14 @@ export function SuccessScreen({ values, onBack }: { values: Registration; onBack
             {rows.map(([label, value]) => (
               <div key={label} className="grid grid-cols-[42%_1fr] gap-3 border-b border-petal py-2.5 last:border-0">
                 <dt className="font-text text-small text-muted">{label}</dt>
-                <dd className="font-text text-small font-semibold break-words text-ink">{value}</dd>
+                <dd className="min-w-0 font-text text-small font-semibold text-ink [overflow-wrap:anywhere]">{value}</dd>
               </div>
             ))}
           </dl>
         </div>
 
         <div className="mt-5 rounded-lg bg-wine px-5 py-4 text-center text-white">
-          <p className="font-caps text-band font-semibold uppercase">{EVENT.theme}</p>
+          <p className="font-caps text-eyebrow font-semibold uppercase text-rose">{EVENT.theme}</p>
           <p className="mt-2 font-text text-body">
             {EVENT.date} · {EVENT.time}
             <br />

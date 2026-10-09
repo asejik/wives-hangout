@@ -149,7 +149,7 @@ export function RegistrationForm({ onDone, onClosed }: { onDone: (result: Done) 
       {heardVia === 'Other' && (
         <TextField
           className="reveal -mt-2"
-          label="Tell us how you heard"
+          label="Where did you hear about it?"
           registration={register('heard_other')}
           error={errors.heard_other?.message}
         />
