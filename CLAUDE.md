@@ -50,4 +50,6 @@ Vite + React 19 + TypeScript + Tailwind CSS 4 (pre-rendered at build, then hydra
 
 ## Git
 
+Production: https://wives-hangout.vercel.app (Vercel project `wives-hangout`, scope `asejiks-projects`; previews sit behind Vercel login).
+
 This folder is its own repo (branch `main`, remote `git@github.com:asejik/wives-hangout.git`). The parent `~/projects` is a different repo: never run git against it.

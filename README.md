@@ -4,7 +4,7 @@ Registration site for **Wives Hangout** by **Citizens of Light Church**, Ilorin.
 
 - **When:** Saturday 24 October 2026, 4PM
 - **Where:** Freedom Place, Ilesanmi Bus Stop, Tanke, Ilorin
-- **Live:** set after the first deploy (see `docs/PROGRESS.md`)
+- **Live:** https://wives-hangout.vercel.app · **QR:** [`docs/launch/wives-hangout-qr.png`](docs/launch/wives-hangout-qr.png) (opens `/?src=qr`)
 
 Registration only, so the church can plan headcount, seating and childcare. Details are saved in a secure database, mirrored to the church's Google Sheet, and a copy is emailed to each registrant.
 

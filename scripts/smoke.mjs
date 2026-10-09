@@ -2,7 +2,7 @@
 // Checks a DEPLOYED site (P03 R-01): the things local tests can't see, like Node ESM resolution on
 // Vercel, headers, generated SEO files.
 // Checks for /privacy, /api/register and /api/email-retry are added when those exist (M1/M2). Run after every deploy:
-//   node scripts/smoke.mjs https://<production-url>
+//   node scripts/smoke.mjs https://wives-hangout.vercel.app
 //   VERCEL_BYPASS=<secret> node scripts/smoke.mjs https://<preview>.vercel.app
 // It never creates a registration.
 
