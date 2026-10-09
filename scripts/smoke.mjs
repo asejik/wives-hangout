@@ -40,7 +40,8 @@ await check('home page is pre-rendered with title, og:image and Event JSON-LD', 
 await check('the venue is not public (page HTML and its JavaScript)', async () => {
   const html = await (await get('/')).text()
   expect(!html.includes('Freedom'), 'venue found in the page HTML')
-  const scripts = [...html.matchAll(/src="(\/assets\/[^"]+\.js)"/g)].map((m) => m[1])
+  // Entry script plus every preloaded chunk (React, the lazy form).
+  const scripts = [...new Set([...html.matchAll(/(?:src|href)="(\/assets\/[^"]+\.js)"/g)].map((m) => m[1]))]
   for (const src of scripts) {
     expect(!(await (await get(src)).text()).includes('Freedom'), `venue found in ${src}`)
   }
