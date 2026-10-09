@@ -98,3 +98,13 @@
 - **Smoke (production): 10/10.** `/api/email-retry` with the production secret: 200. No `x-robots-tag` on production.
 - **Lighthouse (production, mobile):** run 1 (cold CDN right after deploy) Perf 48; runs 2–3 **Perf 91 / 94**, **A11y 100, Best Practices 96, SEO 100**, LCP 1.9–2.2s, CLS ≤ 0.03.
 - **Next:** builder's real registration on mobile data (inbox + images + Sheet row) → delete that row → Facebook "Scrape Again".
+
+## 2026-10-09 · Launch verified (sign-off)
+- **Builder's real registration on mobile data:** confirmation screen ✓, email in the inbox with images ✓, Sheet row ✓ (after the fix below), link preview ✓.
+- **Sheet issue:** only the "Registrations (DEV)" tab existed, so the production row stayed unsynced. Cause: the switch to the production slug (setup step A.6: `EVENT_SLUG`, `setupSheet`, `installTrigger`) hadn't been done. Fixed by the builder; the row synced.
+- **Cleanup:** the builder's test row deleted by id (production total 0 afterwards); the builder deletes it from the Sheet.
+- **Status: LIVE and ready for the 11 Oct announcements.**
+- **Open items:**
+  - re-add the Preview env variables before the next preview test
+  - confirm the first 7am daily summary arrives
+  - after the event: delete all data by 24 Jan 2027 (ADMIN_GUIDE §8)
