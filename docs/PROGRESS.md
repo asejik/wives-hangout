@@ -77,3 +77,16 @@
 - **Checks:** typecheck, lint clean; 113 unit tests; **Playwright 8/8** (happy path + back to home, all errors at once, child question, duplicate shows nothing stored, refresh keeps answers, closed/opens-soon, offline, privacy link); build OK; `npm audit` 0.
 - **Preview (m2-preview):** smoke 10/10; a real browser registration took 0.9s, no console errors; dev rows cleaned (0 left).
 - **Next:** builder review of the screenshots → push to main (still "opens soon" without Production env) → M4-lite hardening + M5 launch.
+
+## 2026-10-09 · M4-lite hardening (AUDIT)
+- **QR:** centre now shows the WIVES HANGOUT lettering (builder request) on a burgundy plate shaped to it (12.5% of the code); decoded at 140–2520px + phone-photo copy. Same URL.
+- **Security:**
+  - RLS on with no policies, and every function's EXECUTE revoked from anon/authenticated (builder's SQL output); Security Advisor clean.
+  - **No secrets** in `dist/` or anywhere in git history (scanned for key patterns and for the actual `.env.local` values); only `.env.example` is tracked.
+  - `npm audit` 0; CSP and security headers verified by smoke; Sheet and CSV cells formula-guarded (tests).
+- **SEO (preview raw HTML):**
+  - title, description, absolute canonical, `og:image?v=hash`, `og:url` all present
+  - Event JSON-LD uses the real facts (2026-10-24T18:00+01:00, Freedom Dome)
+  - CSS inlined; sitemap/robots generated; real 404s
+- **Lighthouse (preview, mobile, 3 runs):** Performance 89 / 94 / 76 (CPU noise; LCP 2.6s, CLS ≤ 0.03); Accessibility 100. Best Practices 93 and SEO 0 are preview-only: Vercel's toolbar script is blocked by our CSP, and previews send `x-robots-tag: noindex`. Re-check on production.
+- **Readiness:** `docs/ADMIN_GUIDE.md` (alerts, Sheet, deletions, closing time, rollback, backups, after-event deletion by 24 Jan 2027); CSV export verified against the live schema (`--event` required).
