@@ -66,7 +66,7 @@ Mobile-first at 360px. Hero full-bleed (photo max 640px, masked edges on wide sc
 - `assets/title.{webp,png}` (640px), `assets/hero-{720,1280}.{webp,jpg}` (photo crop between the band and the date text), `assets/clc-logo-{white,black}.{webp,png}`, `favicon.png`
 - `assets/email-title.png` (email header, 480px for 240px display)
 - `og.jpg`: `python3 scripts/make-og.py "brand/wives hangout - flyer.png"`
-- `docs/launch/wives-hangout-qr.png`: `scripts/make-qr.mjs` with `brand/clc-logo-white.png`
+- `docs/launch/wives-hangout-qr.png`: `scripts/make-qr.mjs` with `brand/wives hangout - text.png` (title lettering on a burgundy plate; builder request)
 - `brand/`: source artwork only, never loaded by the page (excluded from deploys by `.vercelignore`)
 
 ## Email
