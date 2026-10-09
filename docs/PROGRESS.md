@@ -116,3 +116,6 @@
 - **Guards:** `api/_lib/venue.test.ts` (not in the shared facts or the page sources; correct time); `scripts/smoke.mjs` checks the live HTML **and its JS bundles** for the venue; e2e: no venue on the landing page, the venue shown after registering.
 - **Checks:** typecheck, lint clean; **116 unit tests**; **Playwright 8/8**; build OK; venue absent from `dist/`; 360px no sideways scroll.
 - **Note:** registrations made before this change got emails saying 6:00 PM (production had 1 row at the time).
+
+## 2026-10-09 · Pastor's test registration removed
+- At the builder's request, the one production row (the Pastor's test, 22:03 UTC) was deleted by id. Production total: 0. The builder removes it from the Sheet.
