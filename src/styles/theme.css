@@ -1,44 +1,65 @@
 /* Design tokens: docs/DESIGN.md. All UI uses these; no one-off values.
-   TEMPORARY theme until the flyer arrives (M3): re-theme by editing this file only. */
+   Theme from the Wives Hangout flyer (brand/wives hangout - flyer.png): sky, burgundy, magenta ribbon, white lettering. */
 @import "tailwindcss";
 
 /* Self-hosted Google Fonts (latin subset, variable): no extra origins or render-blocking CSS on 3G. */
 @font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/cormorant-garamond.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 300 700; font-display: swap; src: url('/fonts/cormorant-garamond-italic.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: 'Figtree'; font-style: normal; font-weight: 300 900; font-display: swap; src: url('/fonts/figtree.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Oswald'; font-style: normal; font-weight: 200 700; font-display: swap; src: url('/fonts/oswald.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
 @theme {
-  --color-ivory: #FBF5EE;   /* page background */
-  --color-linen: #F3E6DA;   /* raised surfaces, input fill */
-  --color-wine: #5A1A30;    /* headings, primary button, panels */
-  --color-ink: #2B1419;     /* body text */
-  --color-muted: #6B5459;   /* secondary text */
-  --color-gold: #D4AF62;    /* ornaments; text only on wine */
-  --color-gold-700: #7A571B; /* gold text on ivory/linen */
-  --color-rose: #B5536A;    /* decorative accents only, never text */
+  --color-sky-700: #0C86AA;   /* top of the hero sky (flyer) */
+  --color-sky: #2A9DB5;       /* mid sky */
+  --color-sky-200: #98B2BD;   /* sky just above the theme band */
+  --color-burgundy: #68001F;  /* theme band, primary button, headings */
+  --color-wine: #6E0327;      /* flyer's lower gradient: event facts block */
+  --color-magenta: #C82070;   /* ribbon: sparkles, focus ring, selected state (never small text on petal) */
+  --color-magenta-700: #A8185C; /* magenta text and links on light backgrounds */
+  --color-rose: #F4B6CB;      /* soft pink text/accents on wine only */
+  --color-blush: #FFF7F9;     /* page background below the hero */
+  --color-petal: #F8E6EC;     /* input fill, tinted panels */
+  --color-white: #FFFFFF;
+  --color-ink: #2A0C16;       /* body text */
+  --color-muted: #6E4D58;     /* secondary text */
   --color-error: #B3261E;
   --color-success: #1F6B3A;
 
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-caps: "Oswald", "Arial Narrow", Impact, sans-serif;
   --font-text: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  --text-display: 60px; --text-display--line-height: 0.95;
-  --text-h1: 34px;      --text-h1--line-height: 1.05;
-  --text-h2: 28px;      --text-h2--line-height: 1.1;
-  --text-eyebrow: 13px; --text-eyebrow--line-height: 1.2; --text-eyebrow--letter-spacing: 0.18em;
+  --text-h1: 38px;      --text-h1--line-height: 1.05;
+  --text-h2: 30px;      --text-h2--line-height: 1.1;
+  --text-band: 17px;    --text-band--line-height: 1.15; --text-band--letter-spacing: 0.02em;
+  --text-eyebrow: 14px; --text-eyebrow--line-height: 1.2; --text-eyebrow--letter-spacing: 0.08em;
+  --text-button: 19px;  --text-button--line-height: 1;   --text-button--letter-spacing: 0.04em;
   --text-lead: 18px;    --text-lead--line-height: 1.45;
   --text-body: 17px;    --text-body--line-height: 1.5;
-  --text-label: 15px;   --text-label--line-height: 1.3;
+  --text-label: 16px;   --text-label--line-height: 1.3;
   --text-small: 15px;   --text-small--line-height: 1.4;
   --text-meta: 13px;    --text-meta--line-height: 1.3;
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
+  --radius-pill: 999px;
 
-  --shadow-card: 0 1px 2px rgb(43 20 25 / 0.06), 0 10px 30px rgb(43 20 25 / 0.08);
+  --shadow-card: 0 1px 2px rgb(42 12 22 / 0.06), 0 12px 32px rgb(42 12 22 / 0.10);
+  --shadow-focus: 0 0 0 3px rgb(200 32 112 / 0.35);
 
   --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --animate-sparkle-in: sparkle-in 700ms var(--ease-out) both;
+  --animate-rise-in: rise-in 500ms var(--ease-out) both;
+
+  @keyframes sparkle-in {
+    0% { opacity: 0; transform: scale(0.2) rotate(-45deg); }
+    60% { opacity: 1; transform: scale(1.15) rotate(8deg); }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
 }
 
 :root {
@@ -46,14 +67,42 @@
   --dur-base: 250ms;
   --dur-slow: 400ms;
   --rule: 1px;
+  --border-field: 1.5px;
 }
 
 body {
-  background: var(--color-ivory);
+  background: var(--color-blush);
   color: var(--color-ink);
   font-family: var(--font-text);
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto !important; }
+}
+
+/* The hero sky, sampled from the flyer (top → just above the theme band). */
+@utility bg-sky-gradient {
+  /* Reaches sky-200 1.5rem early: the photo backdrop starts under the band (-mt-5) in the same colour. */
+  background: linear-gradient(180deg, var(--color-sky-700) 0%, var(--color-sky) 55%, var(--color-sky-200) calc(100% - 1.5rem), var(--color-sky-200) 100%);
+}
+
+/* Revealed fields (church → Other, how you heard → Other). */
+@utility reveal {
+  animation: rise-in var(--dur-base) var(--ease-out) both;
+}
+
+/* Behind the photo: sky → the flyer's rose florals → wine (the facts block), so the masked edges blend. */
+@utility bg-photo-blend {
+  background: linear-gradient(180deg, var(--color-sky-200) 0%, var(--color-rose) 48%, var(--color-wine) 100%);
+}
+
+/* Fades the photo's top into the sky and its bottom into wine; on wide screens, its sides too. */
+@utility photo-mask {
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
+  @media (min-width: 641px) {
+    mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%),
+      linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+    mask-composite: intersect;
+  }
 }

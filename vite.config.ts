@@ -25,7 +25,7 @@ function eventJsonLd(url: string): string {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: EVENT.name,
-    description: `${EVENT.name} by ${EVENT.host}. ${EVENT.date}, ${EVENT.time} at ${EVENT.venue}.`,
+    description: `${EVENT.name} by ${EVENT.host}: ${EVENT.theme}. ${EVENT.date}, ${EVENT.time} at ${EVENT.venue}.`,
     startDate: EVENT.schedule.start,
     endDate: EVENT.schedule.endDate,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -68,7 +68,7 @@ const seo = (): Plugin => ({
       fileName: 'sitemap.xml',
       source:
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-        ['/'].map((p) => `  <url><loc>${url}${p}</loc><lastmod>${today}</lastmod></url>`).join('\n') +
+        ['/', '/privacy'].map((p) => `  <url><loc>${url}${p}</loc><lastmod>${today}</lastmod></url>`).join('\n') +
         '\n</urlset>\n',
     })
   },
@@ -79,7 +79,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), seo()],
   build: {
     rollupOptions: {
-      input: { main: 'index.html' },
+      input: { main: 'index.html', privacy: 'privacy.html' },
     },
   },
 })

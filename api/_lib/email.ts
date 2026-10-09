@@ -67,7 +67,7 @@ export function confirmationEmail(d: RegistrationDetails, resend: boolean): Mail
     ...rows.map(([label, value]) => `${label}: ${value}`),
     '',
     'THE EVENT',
-    `${EVENT.name} by ${EVENT.host}`,
+    `${EVENT.name} by ${EVENT.host}: ${EVENT.theme}`,
     `Date: ${EVENT.date}`,
     `Time: ${EVENT.time}`,
     `Venue: ${EVENT.venue}`,

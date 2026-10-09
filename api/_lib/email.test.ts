@@ -26,7 +26,9 @@ describe('confirmation email', () => {
     expect(m.text).toContain('Bringing a child: Yes')
     expect(m.text).toContain('How you heard: Other: Radio')
     expect(m.text).toContain('Date: Saturday, 24 October 2026')
-    expect(m.text).toContain('Venue: Freedom Place, Ilesanmi Bus Stop, Tanke, Ilorin')
+    expect(m.text).toContain('Venue: Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin')
+    expect(m.text).toContain('Time: 6:00 PM')
+    expect(m.text).toContain('Marriage, Motherhood and Ministry')
     expect(m.text).toContain('/privacy')
   })
 
@@ -41,7 +43,8 @@ describe('confirmation email', () => {
     process.env.SITE_URL = 'https://wives.example/'
     try {
       const html = confirmationEmail(details, false).html
-      expect(html).toContain('src="https://wives.example/assets/clc-logo.png"')
+      expect(html).toContain('src="https://wives.example/assets/clc-logo-white.png"')
+      expect(html).toContain('src="https://wives.example/assets/email-title.png"')
       expect(html).toContain('href="https://wives.example/privacy"')
     } finally {
       delete process.env.SITE_URL
@@ -54,7 +57,7 @@ describe('confirmation email', () => {
     delete process.env.VERCEL_PROJECT_PRODUCTION_URL
     try {
       const m = confirmationEmail(details, false)
-      expect(m.html).toContain('src="https://wives-hangout.vercel.app/assets/clc-logo.png"')
+      expect(m.html).toContain('src="https://wives-hangout.vercel.app/assets/clc-logo-white.png"')
       expect(m.html).not.toContain('localhost')
       expect(m.text).not.toContain('localhost')
     } finally {
