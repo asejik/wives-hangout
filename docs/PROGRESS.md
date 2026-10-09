@@ -55,3 +55,25 @@
 - **Cleanup:** 124 dev rows deleted (`cleanup-dev.mjs`); dev and production totals are both 0.
 - **Checks:** 113 tests; typecheck, lint clean.
 - **Next:** M2 (the form and every state, confirmation screen, /privacy, Playwright).
+
+## 2026-10-09 · M2 + M3 (flyer arrived): form, states, privacy, flyer look (FEATURE)
+- **Builder decisions:** the flyer is right. **6:00 PM at Freedom Dome** (the brief said 4PM / Freedom Place); the close moves to **2026-10-24T20:00+01:00**. Show the theme line "Marriage, Motherhood and Ministry". Fold M3 into M2. Retention: delete by **24 January 2027** (the Supabase project may be deleted sooner).
+- **Flyer look** (`docs/DESIGN.md`):
+  - hero = sky gradient, white logo, the flyer's title lettering, burgundy theme band, the photo of the five women, a wine facts block with "Register free"
+  - form on a white card; Oswald caps, Cormorant headings, Figtree text
+  - sparkle motif; signature moment = the sparkle on success
+  - contrast computed, all text pairs ≥ 4.5
+- **Form:** full name; years married (number keypad; "0 if less than a year"); phone; email; church (CLC / Other + name); how you heard (select defaulting to "Choose one"; Other + text); the child question verbatim (No/Yes); consent linked to /privacy; honeypot + fill time.
+- **States:** all errors at once with focus on the first; slow after 8s; offline / rate-limited / server-error banners that keep the answers; draft kept across refresh (sessionStorage); closed / opens-soon panels; success screen with the submitted summary + "check your email (and spam)" + Back to home; "already registered" showing no stored details.
+- **/privacy** (NDPA): what, why, who (Supabase London, Google), retention, rights, contact. Pre-rendered.
+- **Assets:** `og.jpg` from the flyer top; QR regenerated in flyer colours (burgundy/magenta, white logo plate), same URL, decoded at 140–2520px + phone-photo copy; favicon; email restyled (burgundy header with white logo + title lettering).
+- **Bugs found in review and fixed:**
+  - a long email made the success screen wider than the phone (grid cell min-width)
+  - the "Other" source field's label and its error message had the same text
+  - the theme band wrapped at 360px
+  - a colour seam between the sky and the photo backdrop (gradient stop)
+  - the email's date wrapped
+- **Process slip:** a `git add -A` swept the newly dropped flyer into a commit under its old name. Harmless (church artwork, excluded from deploys), but we now stage files by name.
+- **Checks:** typecheck, lint clean; 113 unit tests; **Playwright 8/8** (happy path + back to home, all errors at once, child question, duplicate shows nothing stored, refresh keeps answers, closed/opens-soon, offline, privacy link); build OK; `npm audit` 0.
+- **Preview (m2-preview):** smoke 10/10; a real browser registration took 0.9s, no console errors; dev rows cleaned (0 left).
+- **Next:** builder review of the screenshots → push to main (still "opens soon" without Production env) → M4-lite hardening + M5 launch.
