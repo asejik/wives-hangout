@@ -40,3 +40,18 @@
   - `RETRY_SECRET` generated into `.env.local` (not printed).
 - **Checks:** typecheck, lint clean; **112 tests** (16 run the real migration in PGlite); build OK; `npm audit` 0.
 - **Next:** builder runs 001 in Supabase → local load test (dev slug, log mode) → Sheet setup → SMTP wrong-password test → preview push + smoke.
+
+## 2026-10-09 · M1 complete: live checks passed (FEATURE + DATABASE + BUG FIX)
+- **Migration 001 applied** (builder). Grants check: every function `anon_exec=false, auth_exec=false` (incl. `rls_auto_enable`). Security Advisor: no errors, no warnings.
+- **Load (dev slug, log mode):**
+  - Local, cold: 30/30 created, p95 3.7s. Laptop → London Supabase is ~170ms per round trip, two per registration, plus 30 new TLS connections. Warm: p95 1.2s.
+  - **Preview (lhr1): 30/30 created, p50 1.3s, p95 1.5s, max 1.7s.** Target < 3s: met.
+  - **Same-phone race: one created, one duplicate** (4 runs out of 4).
+- **Sheet:** builder confirmed the leading 0 survives in the "Registrations (DEV)" tab; the Sheet then switched to the production slug with `ALERT_EMAIL`, triggers installed, DEV tab deleted.
+- **SMTP:** wrong password → `FAILED` (log scrubbed, no address); correct password + `/api/email-retry` → `SENT` (attempt 2). A wrong secret gets 401. The preview's retry secret works.
+- **Smoke on preview:** 9/9.
+- **Bug (found by the builder): broken logo in the test email.** Root cause: the test email was sent from a laptop, where `SITE_URL` was unset, so the image URL fell back to `http://localhost:3000`. Fixed: the fallback is now `EVENT.productionUrl`. Regression test added. Real registrations (on Vercel) were never affected.
+- **Config incident:** the builder's Preview variables were first saved under Production. The M0 slug guard means a production redeploy would have refused (dev slug + log mode in production) rather than mixing data. Moved to Preview; production gets its own values at M5.
+- **Cleanup:** 124 dev rows deleted (`cleanup-dev.mjs`); dev and production totals are both 0.
+- **Checks:** 113 tests; typecheck, lint clean.
+- **Next:** M2 (the form and every state, confirmation screen, /privacy, Playwright).
