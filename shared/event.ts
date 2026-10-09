@@ -7,6 +7,8 @@ export const EVENT = {
   host: 'Citizens of Light Church',
   /** Privacy requests and questions. */
   contactEmail: 'clcchurchmedia@gmail.com',
+  /** Production address (printed on the QR code). Emails fall back to it when not running on Vercel. */
+  productionUrl: 'https://wives-hangout.vercel.app',
   date: 'Saturday, 24 October 2026',
   time: '4PM',
   /** Always shown in full. */

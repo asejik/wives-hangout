@@ -10,11 +10,12 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 }
 
-/** Absolute site URL for images and the footer. Vercel exposes the production domain at runtime. */
+/** Absolute site URL for images and the footer. Vercel exposes the production domain at runtime.
+ *  Elsewhere (local tests, scripts) use the production address: an email recipient can't load localhost. */
 function siteUrl(): string {
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '')
   const host = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  return host ? `https://${host}` : 'http://localhost:3000'
+  return host ? `https://${host}` : EVENT.productionUrl
 }
 
 export function fillTemplate(template: string, values: Record<string, string>): string {

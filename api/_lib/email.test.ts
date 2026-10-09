@@ -48,6 +48,21 @@ describe('confirmation email', () => {
     }
   })
 
+  it('falls back to the production URL, never localhost (bug: logo broken in an email sent from a laptop)', () => {
+    const saved = { s: process.env.SITE_URL, v: process.env.VERCEL_PROJECT_PRODUCTION_URL }
+    delete process.env.SITE_URL
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL
+    try {
+      const m = confirmationEmail(details, false)
+      expect(m.html).toContain('src="https://wives-hangout.vercel.app/assets/clc-logo.png"')
+      expect(m.html).not.toContain('localhost')
+      expect(m.text).not.toContain('localhost')
+    } finally {
+      if (saved.s !== undefined) process.env.SITE_URL = saved.s
+      if (saved.v !== undefined) process.env.VERCEL_PROJECT_PRODUCTION_URL = saved.v
+    }
+  })
+
   it('refuses to send with an unfilled placeholder', () => {
     expect(() => fillTemplate('<p>{{CODE}} {{NEW_THING}}</p>', { CODE: 'X' })).toThrow('{{NEW_THING}}')
   })

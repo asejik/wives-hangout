@@ -13,7 +13,7 @@ const args = Object.fromEntries(
 const url = args.url
 const n = Number(args.n ?? 30)
 const p95Limit = Number(args.p95 ?? 3000)
-const PRODUCTION_HOST = 'wives-hangout.vercel.app'
+const PRODUCTION_HOST = 'wives-hangout.vercel.app' // = EVENT.productionUrl (shared/event.ts)
 const bypass = process.env.VERCEL_BYPASS // optional: Vercel "Protection Bypass for Automation" secret
 
 if (!url || args['email-mode-is-log'] !== true) {
