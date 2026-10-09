@@ -10,14 +10,16 @@ export const EVENT = {
   /** Production address (printed on the QR code). Emails fall back to it when not running on Vercel. */
   productionUrl: 'https://wives-hangout.vercel.app',
   date: 'Saturday, 24 October 2026',
-  time: '6:00 PM',
-  /** Always shown in full. Flyer (2026-10-09) corrected the brief: 6:00 PM at Freedom Dome. */
-  venue: 'Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin',
+  /** Pastor's update (2026-10-09): 4:00 PM (the flyer said 6:00 PM). */
+  time: '4:00 PM',
+  // No venue here: it is revealed only after registering (api/_lib/venue.ts, server only),
+  // because everything in this file is compiled into the public page.
   /** The flyer's theme line (builder decision 2026-10-09: shown on page, email and preview). */
   theme: 'Marriage, Motherhood and Ministry',
   /** For structured data (SEO). The end time isn't known, so the end is a date only. */
-  schedule: { start: '2026-10-24T18:00:00+01:00', endDate: '2026-10-24' },
-  place: { name: 'Freedom Dome', street: 'Ilesanmi Bus Stop, Tanke', locality: 'Ilorin', region: 'Kwara', country: 'NG' },
+  schedule: { start: '2026-10-24T16:00:00+01:00', endDate: '2026-10-24' },
+  /** City only, for structured data: the venue itself is not public. */
+  place: { locality: 'Ilorin', region: 'Kwara', country: 'NG' },
 } as const
 
 /** Must match the CHECKs in supabase/migrations/001_init.sql. */

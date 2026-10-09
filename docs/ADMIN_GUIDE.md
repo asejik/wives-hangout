@@ -5,15 +5,16 @@ For the Citizens of Light Church team. No technical knowledge needed, except whe
 - **Registration page:** https://wives-hangout.vercel.app (the QR code on the flyer opens it)
 - **Privacy notice:** https://wives-hangout.vercel.app/privacy
 - **Contact address on the site:** clcchurchmedia@gmail.com
-- **Event:** Saturday 24 October 2026, 6:00 PM, Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin
-- **Registration closes:** Saturday 24 October 2026, 8:00 PM (two hours after the start, so people can register at the venue)
+- **Event:** Saturday 24 October 2026, 4:00 PM, Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin
+- **The venue is not shown on the registration page.** People see it only after registering: on the confirmation screen and in their email.
+- **Registration closes:** Saturday 24 October 2026, 8:00 PM (so people can still register at the venue)
 
 ---
 
 ## 1. How it works, in one minute
 
 1. A wife fills in the form and taps **Register**.
-2. She sees **"You're registered!"** with a summary of her answers, and a copy arrives by email.
+2. She sees **"You're registered!"** with a summary of her answers **and the venue**, and a copy (with the venue) arrives by email.
 3. Her details are saved in a secure database (Supabase). **Within 5 minutes** they appear as a new row in the Google Sheet **"Wives Hangout – Registrations"**.
 4. Each person can register **once**, by phone number or by email. If someone tries again, the site says she's already registered and re-sends her details to the email she first used. It never shows anyone's details on screen.
 

@@ -4,7 +4,7 @@ Guidance for Claude Code in this repository.
 
 ## Project
 
-Registration site for **Wives Hangout** (Citizens of Light Church, Ilorin; "Marriage, Motherhood and Ministry"; Sat 24 Oct 2026, 6:00 PM; Freedom Dome, Ilesanmi Bus Stop, Tanke). The flyer corrected the brief's 4PM / Freedom Place. Registration only, for headcount, seating and childcare planning: **no raffle code**. Each registration is saved in Supabase, mirrored to the church's Google Sheet, and a copy of the details is emailed to the registrant.
+Registration site for **Wives Hangout** (Citizens of Light Church, Ilorin; "Marriage, Motherhood and Ministry"; Sat 24 Oct 2026, **4:00 PM** (Pastor's update; the flyer said 6:00 PM); Freedom Dome, Ilesanmi Bus Stop, Tanke). Registration closes 8:00 PM on the day. Registration only, for headcount, seating and childcare planning: **no raffle code**. Each registration is saved in Supabase, mirrored to the church's Google Sheet, and a copy of the details is emailed to the registrant.
 
 - Built by asejik for the church. A sister project, **The Awakening** (`~/projects/the-awakening`), is the source of the patterns here. **Read it freely, never modify it from this repo.**
 - Brief and milestones: `KICKOFF.md`. Status: `docs/PROGRESS.md`. Design tokens: `docs/DESIGN.md`.
@@ -37,6 +37,7 @@ Vite + React 19 + TypeScript + Tailwind CSS 4 (pre-rendered at build, then hydra
 - **CSP:** scripts `'self'` only; inline styles allowed (inlined CSS).
 - `og:image` is `og.jpg?v=<content hash>` (vite.config.ts) because Facebook/WhatsApp cache by URL.
 - No secrets in `VITE_` variables.
+- **The venue is private until registration** (Pastor's request). It lives only in `api/_lib/venue.ts` (server only) and reaches people via `/api/register`'s 201 reply (success screen) and the email. Never put it in `shared/`, `src/`, `index.html` or the JSON-LD (city only). `api/_lib/venue.test.ts` and `scripts/smoke.mjs` fail if it leaks into the page.
 
 ## Visual identity
 

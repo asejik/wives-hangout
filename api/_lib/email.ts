@@ -1,6 +1,7 @@
 import { EVENT, yearsMarriedLabel } from '../../shared/event.js'
 import { churchLabel, heardLabel, type RegistrationDetails } from '../../shared/registration.js'
 import { CONFIRMATION_HTML } from './email-template.js'
+import { VENUE } from './venue.js'
 import type { Mail } from './mailer.js'
 
 // HTML comes from emails/Confirmation.tsx (React Email + Tailwind), pre-rendered into
@@ -45,7 +46,7 @@ export function confirmationEmail(d: RegistrationDetails, resend: boolean): Mail
   ]
 
   const html = fillTemplate(CONFIRMATION_HTML, {
-    PREVIEW: `${EVENT.name}: ${EVENT.date}, ${EVENT.time} at ${EVENT.venue}.`,
+    PREVIEW: `${EVENT.name}: ${EVENT.date}, ${EVENT.time} at ${VENUE}.`,
     HEADING: heading,
     INTRO: intro,
     FULL_NAME: d.full_name,
@@ -70,7 +71,7 @@ export function confirmationEmail(d: RegistrationDetails, resend: boolean): Mail
     `${EVENT.name} by ${EVENT.host}: ${EVENT.theme}`,
     `Date: ${EVENT.date}`,
     `Time: ${EVENT.time}`,
-    `Venue: ${EVENT.venue}`,
+    `Venue: ${VENUE}`,
     '',
     'We look forward to seeing you!',
     EVENT.host,

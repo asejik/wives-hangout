@@ -1,4 +1,4 @@
-import { MailCheck } from 'lucide-react'
+import { CalendarDays, MailCheck, MapPin } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { EVENT, yearsMarriedLabel } from '../../shared/event'
 import { churchLabel, heardLabel, toPayload, type Registration } from '../../shared/registration'
@@ -7,7 +7,8 @@ import { CompactHero } from './Hero'
 import { Sparkle } from './Sparkle'
 
 /** "You're registered!" plus a summary of exactly what was submitted. The sparkle is the page's one signature moment. */
-export function SuccessScreen({ values, onBack }: { values: Registration; onBack: () => void }) {
+/** `venue` comes from /api/register's success reply: it is not in the public page. */
+export function SuccessScreen({ values, venue, onBack }: { values: Registration; venue: string; onBack: () => void }) {
   const headingRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => headingRef.current?.focus(), [])
   const d = toPayload(values)
@@ -52,12 +53,18 @@ export function SuccessScreen({ values, onBack }: { values: Registration; onBack
           </dl>
         </div>
 
-        <div className="mt-5 rounded-lg bg-wine px-5 py-4 text-center text-white">
+        <div className="mt-5 rounded-lg bg-wine px-5 py-5 text-center text-white">
           <p className="font-caps text-eyebrow font-semibold uppercase text-rose">{EVENT.theme}</p>
-          <p className="mt-2 font-text text-body">
-            {EVENT.date} · {EVENT.time}
-            <br />
-            {EVENT.venue}
+          <p className="mt-2 flex items-center justify-center gap-2 font-text text-body font-semibold">
+            <CalendarDays aria-hidden size={18} strokeWidth={2} className="shrink-0 text-rose" />
+            <span>
+              {EVENT.date.replace('Saturday, ', 'Sat ')} · <span className="whitespace-nowrap">{EVENT.time}</span>
+            </span>
+          </p>
+          <p className="mt-3 font-caps text-eyebrow font-semibold uppercase text-rose">Venue</p>
+          <p className="mt-1 flex items-start justify-center gap-2 font-text text-body">
+            <MapPin aria-hidden size={18} strokeWidth={2} className="mt-1 shrink-0 text-rose" />
+            <span>{venue || 'The venue is in your confirmation email.'}</span>
           </p>
         </div>
 

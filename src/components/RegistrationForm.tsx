@@ -14,7 +14,7 @@ import { TextField } from './form/TextField'
 
 type Closed = Extract<SubmitResult, { kind: 'closed' | 'not_open' }>['kind']
 type Banner = 'offline' | 'error' | 'rate_limited' | null
-export type Done = { kind: 'created'; values: Registration } | { kind: 'duplicate' }
+export type Done = { kind: 'created'; values: Registration; venue: string } | { kind: 'duplicate' }
 
 const SLOW_AFTER_MS = 8_000
 
@@ -73,7 +73,7 @@ export function RegistrationForm({ onDone, onClosed }: { onDone: (result: Done) 
 
     if (result.kind === 'created') {
       clearDraft()
-      return onDone({ kind: 'created', values })
+      return onDone({ kind: 'created', values, venue: result.venue })
     }
     if (result.kind === 'duplicate') {
       clearDraft()

@@ -108,3 +108,11 @@
   - re-add the Preview env variables before the next preview test
   - confirm the first 7am daily summary arrives
   - after the event: delete all data by 24 Jan 2027 (ADMIN_GUIDE §8)
+
+## 2026-10-09 · Pastor's update: 4:00 PM, venue revealed only after registering (FEATURE)
+- **Time:** 4:00 PM everywhere (page, success screen, email, meta/OG text, Event JSON-LD `startDate` 2026-10-24T16:00+01:00). Registration close unchanged: **8:00 PM** (builder decision).
+- **Venue removed from the public page:** the hero, `index.html` description/OG text, and the JSON-LD (location is now the city only: Ilorin).
+- **Venue moved server-side:** `api/_lib/venue.ts`. `/api/register` returns it in the 201 reply only (never for a duplicate, so the bot "fake duplicate" reveals nothing); the success screen shows it; the email shows it. It used to be in `shared/event.ts`, which compiles into the public JavaScript, so it would have been readable in the page source.
+- **Guards:** `api/_lib/venue.test.ts` (not in the shared facts or the page sources; correct time); `scripts/smoke.mjs` checks the live HTML **and its JS bundles** for the venue; e2e: no venue on the landing page, the venue shown after registering.
+- **Checks:** typecheck, lint clean; **116 unit tests**; **Playwright 8/8**; build OK; venue absent from `dist/`; 360px no sideways scroll.
+- **Note:** registrations made before this change got emails saying 6:00 PM (production had 1 row at the time).

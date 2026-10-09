@@ -13,6 +13,7 @@ import {
   Text,
   pixelBasedPreset,
 } from '@react-email/components'
+import { VENUE } from '../api/_lib/venue'
 import { EVENT } from '../shared/event'
 
 /**
@@ -67,7 +68,7 @@ const DETAILS: [string, (typeof PLACEHOLDERS)[number]][] = [
 const EVENT_FACTS: [string, string][] = [
   ['Date', EVENT.date],
   ['Time', EVENT.time],
-  ['Venue', EVENT.venue],
+  ['Venue', VENUE],
 ]
 
 function LabelValue({ label, value }: { label: string; value: string }) {

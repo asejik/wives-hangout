@@ -6,6 +6,7 @@ import { registrationWindow } from '../shared/window.js'
 import { checkConfig, scrub } from './_lib/config.js'
 import { rateLimitHit, registerAttendee } from './_lib/db.js'
 import { sendConfirmation } from './_lib/send-confirmation.js'
+import { VENUE } from './_lib/venue.js'
 
 const MIN_FILL_MS = 3_000
 // Per network. Generous because Nigerian mobile networks share public IPs (carrier NAT), and a
@@ -79,7 +80,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       console.log(JSON.stringify({ evt: 'register.created', id: result.id, ms }))
       // Respond first; the email is never on the critical path.
       waitUntil(sendConfirmation(result.id, payload, false))
-      return res.status(201).json({ status: 'created' })
+      // The venue is revealed only to people who have just registered (never in a duplicate reply).
+      return res.status(201).json({ status: 'created', venue: VENUE })
     }
 
     // Duplicate: never reveal stored details to the browser; re-send them to the email on file.

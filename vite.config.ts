@@ -25,7 +25,7 @@ function eventJsonLd(url: string): string {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: EVENT.name,
-    description: `${EVENT.name} by ${EVENT.host}: ${EVENT.theme}. ${EVENT.date}, ${EVENT.time} at ${EVENT.venue}.`,
+    description: `${EVENT.name} by ${EVENT.host}: ${EVENT.theme}. ${EVENT.date}, ${EVENT.time}, ${EVENT.place.locality}.`,
     startDate: EVENT.schedule.start,
     endDate: EVENT.schedule.endDate,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -35,10 +35,10 @@ function eventJsonLd(url: string): string {
     url: `${url}/`,
     location: {
       '@type': 'Place',
-      name: EVENT.place.name,
+      // City only: the venue is revealed after registering.
+      name: EVENT.place.locality,
       address: {
         '@type': 'PostalAddress',
-        streetAddress: EVENT.place.street,
         addressLocality: EVENT.place.locality,
         addressRegion: EVENT.place.region,
         addressCountry: EVENT.place.country,

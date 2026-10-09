@@ -1,7 +1,7 @@
 import type { Registration } from '../../shared/registration'
 
 export type SubmitResult =
-  | { kind: 'created' }
+  | { kind: 'created'; venue: string }
   | { kind: 'duplicate' }
   | { kind: 'invalid'; fields: Record<string, string> }
   | { kind: 'offline' }
@@ -31,7 +31,9 @@ export async function submitRegistration(values: Registration, signals: BotSigna
   }
 
   const body = await res.json().catch(() => ({}))
-  if (res.status === 201 && body.status === 'created') return { kind: 'created' }
+  if (res.status === 201 && body.status === 'created') {
+    return { kind: 'created', venue: typeof body.venue === 'string' ? body.venue : '' }
+  }
   if (res.status === 200 && body.status === 'duplicate') return { kind: 'duplicate' }
   if (res.status === 400 && body.fields) return { kind: 'invalid', fields: body.fields }
   if (res.status === 429) return { kind: 'rate_limited' }

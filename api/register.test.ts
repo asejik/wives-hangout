@@ -158,7 +158,7 @@ describe('POST /api/register', () => {
     registerAttendee.mockResolvedValue({ status: 'created', id: 'r1' })
     const res = await call(valid)
     expect(res.statusCode).toBe(201)
-    expect(res.body).toEqual({ status: 'created' })
+    expect(res.body).toEqual({ status: 'created', venue: 'Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin' })
     expect(sendMail.mock.calls[0][0].to).toBe('funmi@example.com')
     expect(sendMail.mock.calls[0][0].text).toContain('Years married: 7 years')
     expect(setEmailStatus).toHaveBeenCalledWith('r1', 'SENT')

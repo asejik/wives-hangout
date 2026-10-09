@@ -37,6 +37,16 @@ await check('home page is pre-rendered with title, og:image and Event JSON-LD', 
   expect(html.includes('alt="Wives Hangout"') && html.includes('Marriage, Motherhood and Ministry'), 'content not in raw HTML')
 })
 
+await check('the venue is not public (page HTML and its JavaScript)', async () => {
+  const html = await (await get('/')).text()
+  expect(!html.includes('Freedom'), 'venue found in the page HTML')
+  const scripts = [...html.matchAll(/src="(\/assets\/[^"]+\.js)"/g)].map((m) => m[1])
+  for (const src of scripts) {
+    expect(!(await (await get(src)).text()).includes('Freedom'), `venue found in ${src}`)
+  }
+  return `${scripts.length} script(s) checked`
+})
+
 await check('security headers', async () => {
   const r = await get('/')
   const missing = ['content-security-policy', 'x-content-type-options', 'referrer-policy', 'permissions-policy', 'strict-transport-security'].filter(

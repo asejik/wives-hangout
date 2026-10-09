@@ -5,8 +5,8 @@ Registration site for **Wives Hangout** by **Citizens of Light Church**, Ilorin.
 | | |
 |---|---|
 | **Theme** | Marriage, Motherhood and Ministry |
-| **When** | Saturday 24 October 2026, 6:00 PM |
-| **Where** | Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin |
+| **When** | Saturday 24 October 2026, 4:00 PM |
+| **Where** | Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin. **Revealed only after registering** (success screen and email); not on the public page. |
 | **Registration closes** | Saturday 24 October 2026, 8:00 PM (so people can register at the venue) |
 | **Live site** | https://wives-hangout.vercel.app |
 | **Privacy notice** | https://wives-hangout.vercel.app/privacy |
@@ -91,7 +91,7 @@ api/                  Vercel Functions
   health.ts             GET: deployment check
   _lib/                 config guard, db calls, mailer, email template, http types
 shared/               Code used by both page and server
-  event.ts              every event-specific fact (name, date, venue, options, copy)
+  event.ts              every public event fact (name, date, time, options, copy); the venue is NOT here
   registration.ts       the zod schema and the stored payload shape
   phone.ts              Nigerian phone normalisation
   window.ts             open / not_open / closed logic
@@ -261,7 +261,7 @@ The look comes from the event flyer (`brand/`): sky gradient, burgundy theme ban
 
 ## Reusing this for another event
 
-1. Edit [`shared/event.ts`](shared/event.ts) (name, date, venue, options, copy) and the matching `CHECK`s in the migration.
+1. Edit [`shared/event.ts`](shared/event.ts) (name, date, options, copy), the venue in [`api/_lib/venue.ts`](api/_lib/venue.ts) (server only), and the matching `CHECK`s in the migration.
 2. Replace the artwork in `public/assets`, then rebuild `og.jpg` and the QR code.
 3. Set a new `EVENT_SLUG` and closing time in Vercel, and point the Apps Script at it.
 

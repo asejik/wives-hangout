@@ -48,7 +48,7 @@ export default function App() {
     document.querySelector<HTMLInputElement>('#register input:not([type=hidden])')?.focus({ preventScroll: true })
   }
 
-  if (done?.kind === 'created') return <SuccessScreen values={done.values} onBack={backToHome} />
+  if (done?.kind === 'created') return <SuccessScreen values={done.values} venue={done.venue} onBack={backToHome} />
   if (done?.kind === 'duplicate') return <DuplicateNotice onBack={backToHome} />
 
   return (

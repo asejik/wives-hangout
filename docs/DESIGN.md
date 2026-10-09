@@ -2,7 +2,7 @@
 
 **Direction: "The flyer, made tappable"** (builder approved, 2026-10-09). Source: `brand/wives hangout - flyer.png`, the title lettering `brand/wives hangout - text.png`, and the church logo variants (`clc-logo-white.png`, `clc-logo-black.png`; the orange version is optional).
 
-- **Hero:** sky gradient (sampled from the flyer), white church logo, the flyer's title lettering, the burgundy theme band ("Marriage, Motherhood and Ministry"), the photo of the five women, then a wine block with the date, time and venue and a white "Register free" button.
+- **Hero:** sky gradient (sampled from the flyer), white church logo, the flyer's title lettering, the burgundy theme band ("Marriage, Motherhood and Ministry"), the photo of the five women, then a wine block with the date and time (**no venue**: it's revealed after registering) and a white "Register free" button.
 - **Below:** a blush page with the form on a white card.
 - **Signature moment (one):** the flyer's four-point sparkle pops in on the success screen (`animate-sparkle-in`, off with reduced motion). The sparkle (`src/components/Sparkle.tsx`) is the recurring motif.
 

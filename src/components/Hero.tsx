@@ -1,7 +1,8 @@
-import { CalendarDays, MapPin } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import { EVENT } from '../../shared/event'
 
-/** The flyer, made tappable: sky, logo, title lettering, theme band, the five women, then the event facts. */
+/** The flyer, made tappable: sky, logo, title lettering, theme band, the five women, then the date and time.
+ *  No venue: it is revealed only after registering (Pastor's request). */
 export function Hero({ onRegister }: { onRegister?: () => void }) {
   return (
     <header>
@@ -43,12 +44,6 @@ export function Hero({ onRegister }: { onRegister?: () => void }) {
           <p className="flex items-center justify-center gap-2 font-text text-lead font-semibold uppercase tracking-[0.04em]">
             <CalendarDays aria-hidden size={20} strokeWidth={2} className="shrink-0 text-rose" />
             {EVENT.date.replace('Saturday, ', 'Sat ')} · {EVENT.time}
-          </p>
-          <p className="mt-2 flex items-start justify-center gap-2 font-text text-body">
-            <MapPin aria-hidden size={20} strokeWidth={2} className="mt-0.5 shrink-0 text-rose" />
-            <span>
-              <b className="font-bold uppercase">{EVENT.place.name},</b> {EVENT.venue.replace(`${EVENT.place.name}, `, '')}
-            </span>
           </p>
           {onRegister && (
             <a
