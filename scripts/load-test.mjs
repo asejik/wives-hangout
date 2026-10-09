@@ -30,7 +30,7 @@ const run = Date.now().toString(36)
 const rand = (len) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join('')
 const person = (i, phone = '090' + rand(8)) => ({
   full_name: `LOADTEST ${run} ${i}`,
-  years_married: String(i % 30),
+  years_married: String(typeof i === 'number' ? i % 30 : 5),
   phone,
   email: `loadtest-${run}-${i}@example.invalid`,
   church: i % 3 ? 'Citizens of Light Church' : 'Other',
