@@ -16,6 +16,8 @@ export const EVENT = {
   // because everything in this file is compiled into the public page.
   /** The flyer's theme line (builder decision 2026-10-09: shown on page, email and preview). */
   theme: 'Marriage, Motherhood and Ministry',
+  /** Shown under the hero as "POWERED BY: BIRTHING THE SEED" (builder request, 2026-10-10). */
+  poweredBy: 'Birthing the Seed',
   /** For structured data (SEO). The end time isn't known, so the end is a date only. */
   schedule: { start: '2026-10-24T16:00:00+01:00', endDate: '2026-10-24' },
   /** City only, for structured data: the venue itself is not public. */

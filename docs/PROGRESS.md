@@ -119,3 +119,9 @@
 
 ## 2026-10-09 · Pastor's test registration removed
 - At the builder's request, the one production row (the Pastor's test, 22:03 UTC) was deleted by id. Production total: 0. The builder removes it from the Sheet.
+
+## 2026-10-10 · New venue, "Powered by", theme band behind the heads (FEATURE)
+- **Venue:** now "M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin" (`api/_lib/venue.ts`, server only; still revealed only after registering). Email template rebuilt; "&" escaped correctly in the HTML.
+- **Venue guards** now check distinctive words of the current and earlier venue (`Ojomu`, `Luxury Hotel`, `Basin Road`, `Freedom`) in `api/_lib/venue.test.ts` and `scripts/smoke.mjs` (page HTML + preloaded scripts), plus e2e.
+- **"POWERED BY: BIRTHING THE SEED"** under the hero's Register button (`EVENT.poweredBy`; rose on wine, 7.3:1).
+- **Theme band behind the women's heads, as on the flyer:** a page can't layer text behind people in a photo without a cut-out, so the hero image is now a taller crop of the flyer itself (y 1850–3990), which already has the band behind the heads and the ribbon. The HTML band is removed; the theme text is in the image's alt (smoke still finds it in the raw HTML). The photo mask's top fade is shortened (16% → 6%) so the band stays crisp. Hero images: 720w webp 39 KB, 1280w webp 83 KB.

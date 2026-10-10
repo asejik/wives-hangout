@@ -2,7 +2,7 @@
 
 **Direction: "The flyer, made tappable"** (builder approved, 2026-10-09). Source: `brand/wives hangout - flyer.png`, the title lettering `brand/wives hangout - text.png`, and the church logo variants (`clc-logo-white.png`, `clc-logo-black.png`; the orange version is optional).
 
-- **Hero:** sky gradient (sampled from the flyer), white church logo, the flyer's title lettering, the burgundy theme band ("Marriage, Motherhood and Ministry"), the photo of the five women, then a wine block with the date and time (**no venue**: it's revealed after registering) and a white "Register free" button.
+- **Hero:** sky gradient (sampled from the flyer), white church logo, the flyer's title lettering, then **a crop of the flyer itself** with the burgundy theme band ("Marriage, Motherhood and Ministry") **behind the five women's heads** and the magenta ribbon (Pastor's request, 2026-10-10; the theme text is in the image's alt), then a wine block with the date and time (**no venue**: it's revealed after registering), a white "Register free" button and "POWERED BY: BIRTHING THE SEED" in rose caps.
 - **Below:** a blush page with the form on a white card.
 - **Signature moment (one):** the flyer's four-point sparkle pops in on the success screen (`animate-sparkle-in`, off with reduced motion). The sparkle (`src/components/Sparkle.tsx`) is the recurring motif.
 
@@ -42,7 +42,7 @@ Self-hosted variable woff2 (latin) in `public/fonts/`. The title is the flyer's 
 |---|---|---|
 | `text-h1` | 38 / 1.05 | "Register", "You're registered!", privacy title |
 | `text-h2` | 30 / 1.1 | Panel headings, privacy sections |
-| `text-band` | 17 / 1.15, caps | Theme band (one line at 360px) |
+| `text-band` | 17 / 1.15, caps | Theme line on the success screen (the hero band is now part of the flyer image) |
 | `text-eyebrow` | 14 / 1.2, caps | Small caps labels |
 | `text-button` | 19 / 1, caps | Buttons |
 | `text-lead` | 18 / 1.45 | Intro lines, date |
@@ -63,7 +63,7 @@ Mobile-first at 360px. Hero full-bleed (photo max 640px, masked edges on wide sc
 
 ## Assets (`public/`)
 
-- `assets/title.{webp,png}` (640px), `assets/hero-{720,1280}.{webp,jpg}` (photo crop between the band and the date text), `assets/clc-logo-{white,black}.{webp,png}`, `favicon.png`
+- `assets/title.{webp,png}` (640px), `assets/hero-{720,1280}.{webp,jpg}` (flyer crop y 1850–3990: sky above the band, the band behind the heads, down to just above the flyer's date text; the photo mask's top fade ends at 6% so the band stays crisp), `assets/clc-logo-{white,black}.{webp,png}`, `favicon.png`
 - `assets/email-title.png` (email header, 480px for 240px display)
 - `og.jpg`: `python3 scripts/make-og.py "brand/wives hangout - flyer.png"`
 - `docs/launch/wives-hangout-qr.png`: `scripts/make-qr.mjs` with `brand/wives hangout - text.png` (title lettering on a burgundy plate; builder request)

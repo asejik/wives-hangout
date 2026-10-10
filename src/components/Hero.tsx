@@ -1,7 +1,8 @@
 import { CalendarDays } from 'lucide-react'
 import { EVENT } from '../../shared/event'
 
-/** The flyer, made tappable: sky, logo, title lettering, theme band, the five women, then the date and time.
+/** The flyer, made tappable: sky, logo, title lettering, then the flyer's own theme band behind the five
+ *  women's heads (a crop of the flyer, as the Pastor asked), then the date and time and "Powered by".
  *  No venue: it is revealed only after registering (Pastor's request). */
 export function Hero({ onRegister }: { onRegister?: () => void }) {
   return (
@@ -18,22 +19,19 @@ export function Hero({ onRegister }: { onRegister?: () => void }) {
               <img src="/assets/title.png" alt={EVENT.name} width={640} height={299} fetchPriority="high" className="h-auto w-full" />
             </picture>
           </h1>
-          {/* The sky ends at this band, exactly where the photo's backdrop begins: no seam. */}
-          <p className="relative z-10 mx-auto mt-6 w-fit bg-burgundy px-3 py-2 text-center font-caps text-band font-semibold uppercase text-white">
-            {EVENT.theme}
-          </p>
         </div>
       </div>
-      <div className="bg-photo-blend -mt-5">
+      {/* The sky gradient ends in sky-200, the colour the photo's backdrop starts with: no seam. */}
+      <div className="bg-photo-blend">
         <picture className="photo-mask mx-auto block max-w-[640px]">
           <source type="image/webp" srcSet="/assets/hero-720.webp 720w, /assets/hero-1280.webp 1280w" sizes="(min-width: 640px) 640px, 100vw" />
           <img
             src="/assets/hero-720.jpg"
             srcSet="/assets/hero-720.jpg 720w, /assets/hero-1280.jpg 1280w"
             sizes="(min-width: 640px) 640px, 100vw"
-            alt="Five smiling women laughing together"
+            alt={`${EVENT.theme}: five smiling women laughing together`}
             width={1280}
-            height={608}
+            height={761}
             className="h-auto w-full"
           />
         </picture>
@@ -57,6 +55,7 @@ export function Hero({ onRegister }: { onRegister?: () => void }) {
               Register free
             </a>
           )}
+          <p className="mt-7 font-caps text-eyebrow font-semibold uppercase text-rose">Powered by: {EVENT.poweredBy}</p>
         </div>
       </div>
     </header>

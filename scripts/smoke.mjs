@@ -39,11 +39,14 @@ await check('home page is pre-rendered with title, og:image and Event JSON-LD', 
 
 await check('the venue is not public (page HTML and its JavaScript)', async () => {
   const html = await (await get('/')).text()
-  expect(!html.includes('Freedom'), 'venue found in the page HTML')
+  // Distinctive words of the venue (current and earlier); keep in sync with api/_lib/venue.test.ts.
+  const leaks = (text) => ['Ojomu', 'Luxury Hotel', 'Basin Road', 'Freedom'].filter((w) => text.includes(w))
+  expect(leaks(html).length === 0, `venue found in the page HTML: ${leaks(html)}`)
   // Entry script plus every preloaded chunk (React, the lazy form).
   const scripts = [...new Set([...html.matchAll(/(?:src|href)="(\/assets\/[^"]+\.js)"/g)].map((m) => m[1]))]
   for (const src of scripts) {
-    expect(!(await (await get(src)).text()).includes('Freedom'), `venue found in ${src}`)
+    const found = leaks(await (await get(src)).text())
+    expect(found.length === 0, `venue found in ${src}: ${found}`)
   }
   return `${scripts.length} script(s) checked`
 })

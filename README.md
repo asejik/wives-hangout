@@ -6,7 +6,7 @@ Registration site for **Wives Hangout** by **Citizens of Light Church**, Ilorin.
 |---|---|
 | **Theme** | Marriage, Motherhood and Ministry |
 | **When** | Saturday 24 October 2026, 4:00 PM |
-| **Where** | Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin. **Revealed only after registering** (success screen and email); not on the public page. |
+| **Where** | M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin (changed 10 Oct from Freedom Dome). **Revealed only after registering** (success screen and email); not on the public page. |
 | **Registration closes** | Saturday 24 October 2026, 8:00 PM (so people can register at the venue) |
 | **Live site** | https://wives-hangout.vercel.app |
 | **Privacy notice** | https://wives-hangout.vercel.app/privacy |
@@ -253,7 +253,7 @@ The church team's guide is [`docs/ADMIN_GUIDE.md`](docs/ADMIN_GUIDE.md): reading
 
 ## Design
 
-The look comes from the event flyer (`brand/`): sky gradient, burgundy theme band, magenta ribbon, the flyer's white title lettering, and a four-point sparkle motif. Type is Oswald (caps), Cormorant Garamond (headings) and Figtree (text).
+The look comes from the event flyer (`brand/`): sky gradient, the flyer's own burgundy theme band behind the women's heads (a crop of the flyer), magenta ribbon, the flyer's white title lettering, and a four-point sparkle motif. Type is Oswald (caps), Cormorant Garamond (headings) and Figtree (text).
 
 - Every colour, font and size is a token in [`src/styles/theme.css`](src/styles/theme.css), documented in [`docs/DESIGN.md`](docs/DESIGN.md).
 - Built for 360px first; touch targets ≥ 44px; WCAG 2.2 AA contrast; `prefers-reduced-motion` respected.

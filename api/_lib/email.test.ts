@@ -26,7 +26,8 @@ describe('confirmation email', () => {
     expect(m.text).toContain('Bringing a child: Yes')
     expect(m.text).toContain('How you heard: Other: Radio')
     expect(m.text).toContain('Date: Saturday, 24 October 2026')
-    expect(m.text).toContain('Venue: Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin')
+    expect(m.text).toContain('Venue: M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin')
+    expect(m.html).toContain('M&#38;S Luxury Hotel') // escaped in the HTML version
     expect(m.text).toContain('Time: 4:00 PM')
     expect(m.text).toContain('Marriage, Motherhood and Ministry')
     expect(m.text).toContain('/privacy')

@@ -5,7 +5,7 @@ For the Citizens of Light Church team. No technical knowledge needed, except whe
 - **Registration page:** https://wives-hangout.vercel.app (the QR code on the flyer opens it)
 - **Privacy notice:** https://wives-hangout.vercel.app/privacy
 - **Contact address on the site:** clcchurchmedia@gmail.com
-- **Event:** Saturday 24 October 2026, 4:00 PM, Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin
+- **Event:** Saturday 24 October 2026, 4:00 PM, M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin (changed 10 October; it was Freedom Dome)
 - **The venue is not shown on the registration page.** People see it only after registering: on the confirmation screen and in their email.
 - **Registration closes:** Saturday 24 October 2026, 8:00 PM (so people can still register at the venue)
 

@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
 
 test('happy path: register, see the summary, then back to an empty form', async ({ page }) => {
   await expect(page.getByText('4:00 PM')).toBeVisible()
-  expect(await page.content()).not.toContain('Freedom')
+  expect(await page.content()).not.toContain('Ojomu')
   const id = unique()
   await fillRequired(page, `0905${id}`, `e2e-${id}@example.invalid`)
   await submitLikeAPerson(page)
@@ -36,7 +36,7 @@ test('happy path: register, see the summary, then back to an empty form', async 
   await expect(page.getByText('6 years')).toBeVisible()
   await expect(page.getByText('check your inbox (and your spam folder)', { exact: false })).toBeVisible()
   // The venue appears only now, after registering (it comes from the server's success reply).
-  await expect(page.getByText('Freedom Dome, Ilesanmi Bus Stop, Tanke, Ilorin')).toBeVisible()
+  await expect(page.getByText('M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin')).toBeVisible()
 
   await page.getByRole('button', { name: '← Back to home' }).click()
   await expect(page.getByRole('heading', { name: 'Register', exact: true })).toBeVisible()
