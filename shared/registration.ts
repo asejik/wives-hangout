@@ -15,6 +15,8 @@ export const registrationSchema = z
       .min(1, "Enter how many years you've been married")
       .regex(/^\d{1,2}$/, 'Enter a number, e.g. 5')
       .refine((v) => Number(v) <= MAX_YEARS_MARRIED, `Enter a number from 0 to ${MAX_YEARS_MARRIED}`),
+    // Builder request 2026-10-11. Free text: "Teacher", "Trader", "Civil servant", …
+    occupation: z.string().trim().min(2, 'Enter your occupation').max(80, 'Keep it under 80 characters'),
     phone: z
       .string()
       .trim()
@@ -51,6 +53,8 @@ export type Registration = z.output<typeof registrationSchema>
 export type RegistrationDetails = {
   full_name: string
   years_married: number
+  /** '' for people who registered before the field existed (migration 002). */
+  occupation: string
   phone: string
   email: string
   church: (typeof CHURCHES)[number]
@@ -66,6 +70,7 @@ export function toPayload(r: Registration): RegisterPayload {
   return {
     full_name: r.full_name,
     years_married: Number(r.years_married),
+    occupation: r.occupation,
     phone: normalizeNigerianPhone(r.phone)!,
     email: r.email.toLowerCase(),
     church: r.church,

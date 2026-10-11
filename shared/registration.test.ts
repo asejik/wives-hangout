@@ -3,7 +3,7 @@ import { yearsMarriedLabel } from './event.js'
 import { churchLabel, fieldErrors, heardLabel, registrationSchema, toPayload } from './registration.js'
 
 const valid = {
-  full_name: '  Funmilayo Adeyemi ', years_married: ' 7 ', phone: '+234 801 234 5678', email: 'Funmi@Example.com ',
+  full_name: '  Funmilayo Adeyemi ', years_married: ' 7 ', occupation: ' Nurse ', phone: '+234 801 234 5678', email: 'Funmi@Example.com ',
   church: 'Citizens of Light Church', church_other: '', heard_via: 'WhatsApp', heard_other: '',
   bringing_child: 'No', consent: true, source: 'qr',
 }
@@ -16,15 +16,16 @@ const errorsFor = (input: object) => {
 describe('registrationSchema', () => {
   it('accepts a valid registration and normalises it for storage', () => {
     expect(toPayload(registrationSchema.parse(valid))).toEqual({
-      full_name: 'Funmilayo Adeyemi', years_married: 7, phone: '08012345678', email: 'funmi@example.com',
+      full_name: 'Funmilayo Adeyemi', years_married: 7, occupation: 'Nurse', phone: '08012345678', email: 'funmi@example.com',
       church: 'Citizens of Light Church', church_other: '', heard_via: 'WhatsApp', heard_other: '',
       bringing_child: false, source: 'qr',
     })
   })
 
   it('gives plain messages for each bad field, all at once', () => {
-    expect(errorsFor({ ...valid, full_name: 'F', phone: '0801', email: 'funmi@', church: '', heard_via: '', bringing_child: '', consent: false })).toEqual({
+    expect(errorsFor({ ...valid, full_name: 'F', occupation: ' ', phone: '0801', email: 'funmi@', church: '', heard_via: '', bringing_child: '', consent: false })).toEqual({
       full_name: 'Enter your full name',
+      occupation: 'Enter your occupation',
       phone: 'Enter an 11-digit number, e.g. 08012345678',
       email: 'Enter a valid email, e.g. name@gmail.com',
       church: 'Choose your church',
@@ -78,6 +79,7 @@ describe('registrationSchema', () => {
 
   it('caps long input', () => {
     expect(errorsFor({ ...valid, full_name: 'x'.repeat(81) })).toEqual({ full_name: 'Keep it under 80 characters' })
+    expect(errorsFor({ ...valid, occupation: 'x'.repeat(81) })).toEqual({ occupation: 'Keep it under 80 characters' })
   })
 })
 

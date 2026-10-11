@@ -38,6 +38,7 @@ export function confirmationEmail(d: RegistrationDetails, resend: boolean): Mail
   const rows: [string, string][] = [
     ['Full name', d.full_name],
     ['Years married', yearsMarriedLabel(d.years_married)],
+    ['Occupation', d.occupation || 'Not given'],
     ['Phone (WhatsApp)', d.phone],
     ['Email', d.email],
     ['Church', churchLabel(d)],
@@ -51,6 +52,8 @@ export function confirmationEmail(d: RegistrationDetails, resend: boolean): Mail
     INTRO: intro,
     FULL_NAME: d.full_name,
     YEARS_MARRIED: yearsMarriedLabel(d.years_married),
+    // Rows registered before the field existed have '' (re-sends and retries use the stored details).
+    OCCUPATION: d.occupation || 'Not given',
     PHONE: d.phone,
     EMAIL: d.email,
     CHURCH: churchLabel(d),

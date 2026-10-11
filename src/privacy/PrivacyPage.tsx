@@ -3,7 +3,7 @@ import { EVENT } from '../../shared/event'
 
 // Plain-language privacy notice (NDPA 2023). Not legal advice: the church should have it reviewed if it can.
 // Retention: builder decision 2026-10-09 (delete by 24 January 2027, three months after the event).
-const UPDATED = '9 October 2026'
+const UPDATED = '11 October 2026'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -44,7 +44,7 @@ export function PrivacyPage() {
 
       <Section title="What we collect">
         <ul className="list-disc space-y-1 pl-5">
-          <li>Your full name and how many years you've been married</li>
+          <li>Your full name, how many years you've been married, and your occupation</li>
           <li>Your phone (WhatsApp) number and email address</li>
           <li>Your church, and how you heard about {EVENT.name}</li>
           <li>Whether you'll need to bring a child because of childcare limitations</li>

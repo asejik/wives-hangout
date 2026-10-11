@@ -47,7 +47,7 @@ export function RegistrationForm({ onDone, onClosed }: { onDone: (result: Done) 
     shouldFocusError: true,
     defaultValues: {
       // '' for the select, so its placeholder shows instead of silently picking the first option.
-      full_name: '', years_married: '', phone: '', email: '', church_other: '', heard_via: '' as RegistrationInput['heard_via'],
+      full_name: '', years_married: '', occupation: '', phone: '', email: '', church_other: '', heard_via: '' as RegistrationInput['heard_via'],
       heard_other: '', ...loadDraft(), source: sourceTag(),
     },
   })
@@ -103,6 +103,14 @@ export function RegistrationForm({ onDone, onClosed }: { onDone: (result: Done) 
         hint="Enter 0 if it's less than a year."
         registration={register('years_married')}
         error={errors.years_married?.message}
+      />
+
+      <TextField
+        label="Occupation"
+        autoComplete="organization-title"
+        placeholder="e.g. Teacher, Trader, Nurse"
+        registration={register('occupation')}
+        error={errors.occupation?.message}
       />
 
       <TextField

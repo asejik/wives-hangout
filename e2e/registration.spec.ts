@@ -5,6 +5,7 @@ const unique = () => Math.floor(Math.random() * 1e7).toString().padStart(7, '0')
 async function fillRequired(page: Page, phone: string, email: string) {
   await page.getByLabel('Full name', { exact: true }).fill('E2E Tester')
   await page.getByLabel('How many years married?').fill('6')
+  await page.getByLabel('Occupation', { exact: true }).fill('Teacher')
   await page.getByLabel('Phone number (WhatsApp)').fill(phone)
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByText('Citizens of Light Church', { exact: true }).click()
@@ -50,6 +51,7 @@ test('shows every error at once, including the "Other" fields', async ({ page })
   for (const message of [
     'Enter your full name',
     "Enter how many years you've been married",
+    'Enter your occupation',
     'Enter an 11-digit number, e.g. 08012345678',
     'Enter the name of your church',
     'Tell us how you heard',

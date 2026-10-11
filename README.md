@@ -60,7 +60,7 @@ The site exists so the church can plan **headcount, seating and childcare**. It 
  Gmail SMTP          Google Apps Script (bound to the church's Sheet)
 ```
 
-- **The form** asks for full name, years married, phone (Nigerian 11-digit), email, church (Citizens of Light Church or Other + name), how they heard about the event (Other + text), whether they will need to bring a child, and consent to the privacy notice.
+- **The form** asks for full name, years married, occupation, phone (Nigerian 11-digit), email, church (Citizens of Light Church or Other + name), how they heard about the event (Other + text), whether they will need to bring a child, and consent to the privacy notice.
 - **One registration per person.** Phone and email are each unique per event. A repeat attempt shows "already registered", never shows stored details, and re-sends the details to the email on file.
 - **The response never waits for email.** The function replies first and sends the confirmation in the background (`waitUntil`). Failed sends are retried by the Apps Script trigger.
 - **Opening and closing are enforced by the server**, so a stale tab can't register after closing.
@@ -104,7 +104,7 @@ src/                  The page
   styles/theme.css      design tokens
 emails/               Confirmation.tsx (React Email source)
 apps-script/          Code.gs, the Google Sheet mirror (+ tests)
-supabase/migrations/  001_init.sql and its rollback
+supabase/migrations/  001_init.sql, 002_occupation.sql (+ rollbacks), PGlite tests
 scripts/              dev server, pre-render, smoke test, export, cleanup, load test, OG/QR images
 e2e/                  Playwright specs
 public/               fonts, logos, hero images, og.jpg, favicon
@@ -130,7 +130,7 @@ npm run dev:full               # http://localhost:3000, page + /api
 
 ### Database setup (once)
 
-Run [`supabase/migrations/001_init.sql`](supabase/migrations/001_init.sql) in the Supabase SQL editor. It creates the `registrations` and `rate_limits` tables, enables row-level security, and adds the SQL functions the API and Apps Script call. The rollback is `001_init.down.sql` (**destructive**: export first).
+Run the migrations in order in the Supabase SQL editor: [`001_init.sql`](supabase/migrations/001_init.sql), then [`002_occupation.sql`](supabase/migrations/002_occupation.sql) (adds the occupation column, live-safe). 001 creates the `registrations` and `rate_limits` tables, enables row-level security, and adds the SQL functions the API and Apps Script call. The rollback is `001_init.down.sql` (**destructive**: export first).
 
 ## Environment variables
 
@@ -197,9 +197,9 @@ Requires `Authorization: Bearer <RETRY_SECRET>`. Re-sends up to 10 `FAILED` or s
 
 ## Data model
 
-Table `public.registrations` (see `001_init.sql`):
+Table `public.registrations` (see `001_init.sql` and `002_occupation.sql`):
 
-- **Answers:** `full_name`, `years_married` (0–80), `phone` (normalised `0XXXXXXXXXX`), `email` (lower-case), `church`, `church_other`, `heard_via`, `heard_other`, `bringing_child`, `consent_at`, `source` (e.g. `qr`).
+- **Answers:** `full_name`, `years_married` (0–80), `occupation` (≤ 80; required by the form, '' for rows before migration 002), `phone` (normalised `0XXXXXXXXXX`), `email` (lower-case), `church`, `church_other`, `heard_via`, `heard_other`, `bringing_child`, `consent_at`, `source` (e.g. `qr`).
 - **Bookkeeping:** `event` (slug), `created_at`, `updated_at`, `email_status` (`PENDING`, `SENT`, `FAILED`, `LOGGED`), `email_attempts`, `emailed_at`, `last_resend_at`, retry fields, `sheet_synced_at`.
 - **Uniqueness:** `(event, phone)` and `(event, email)`. Simultaneous submits are safe without application locks.
 - **Access:** RLS enabled with no policies; `anon` and `authenticated` have no table or function rights. Only the server's secret key can call the SQL functions (`register_attendee`, `email_retry_batch`, `sheet_pending`, `sheet_mark_synced`, `ops_summary`, `rate_limit_hit`, …).

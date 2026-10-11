@@ -25,7 +25,7 @@ import { EVENT } from '../shared/event'
  * and no <Font> (it sets `* { font-family }`). Colours mirror src/styles/theme.css (flyer theme).
  */
 const PLACEHOLDERS = [
-  'PREVIEW', 'HEADING', 'INTRO', 'FULL_NAME', 'YEARS_MARRIED', 'PHONE', 'EMAIL', 'CHURCH', 'HEARD', 'CHILD', 'SITE_URL',
+  'PREVIEW', 'HEADING', 'INTRO', 'FULL_NAME', 'YEARS_MARRIED', 'OCCUPATION', 'PHONE', 'EMAIL', 'CHURCH', 'HEARD', 'CHILD', 'SITE_URL',
 ] as const
 const p = (name: (typeof PLACEHOLDERS)[number]) => `{{${name}}}`
 
@@ -58,6 +58,7 @@ const config = {
 const DETAILS: [string, (typeof PLACEHOLDERS)[number]][] = [
   ['Full name', 'FULL_NAME'],
   ['Years married', 'YEARS_MARRIED'],
+  ['Occupation', 'OCCUPATION'],
   ['Phone (WhatsApp)', 'PHONE'],
   ['Email', 'EMAIL'],
   ['Church', 'CHURCH'],

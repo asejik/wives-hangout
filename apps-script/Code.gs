@@ -23,6 +23,7 @@ var REGISTRATION_HEADERS = [
   'id', 'created_at', 'full_name', 'years_married', 'phone', 'email', 'church', 'church_other',
   'heard_via', 'heard_other', 'bringing_child', 'consent_at', 'source', 'synced_at',
   // Columns added later go at the END so existing rows never shift (setupSheet appends them).
+  'occupation', // migration 002, 2026-10-11
 ];
 var TABS = {
   Registrations: REGISTRATION_HEADERS,

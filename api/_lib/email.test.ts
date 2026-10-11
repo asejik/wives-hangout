@@ -3,7 +3,7 @@ import type { RegistrationDetails } from '../../shared/registration.js'
 import { confirmationEmail, fillTemplate } from './email.js'
 
 const details: RegistrationDetails = {
-  full_name: 'Funmilayo Adeyemi', years_married: 7, phone: '08012345678', email: 'funmi@example.com',
+  full_name: 'Funmilayo Adeyemi', years_married: 7, occupation: 'Nurse', phone: '08012345678', email: 'funmi@example.com',
   church: 'Citizens of Light Church', church_other: '', heard_via: 'WhatsApp', heard_other: '', bringing_child: false,
 }
 
@@ -23,6 +23,7 @@ describe('confirmation email', () => {
   it('has a plain-text version with the details and the full event facts', () => {
     const m = confirmationEmail({ ...details, years_married: 0, bringing_child: true, heard_via: 'Other', heard_other: 'Radio' }, false)
     expect(m.text).toContain('Years married: Less than a year')
+    expect(m.text).toContain('Occupation: Nurse')
     expect(m.text).toContain('Bringing a child: Yes')
     expect(m.text).toContain('How you heard: Other: Radio')
     expect(m.text).toContain('Date: Saturday, 24 October 2026')
@@ -65,6 +66,12 @@ describe('confirmation email', () => {
       if (saved.s !== undefined) process.env.SITE_URL = saved.s
       if (saved.v !== undefined) process.env.VERCEL_PROJECT_PRODUCTION_URL = saved.v
     }
+  })
+
+  it('shows "Not given" for people who registered before the occupation field existed', () => {
+    const m = confirmationEmail({ ...details, occupation: '' }, true)
+    expect(m.text).toContain('Occupation: Not given')
+    expect(m.html).toContain('Not given')
   })
 
   it('refuses to send with an unfilled placeholder', () => {

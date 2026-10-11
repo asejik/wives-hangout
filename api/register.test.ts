@@ -31,13 +31,13 @@ async function call(body: unknown, method = 'POST') {
 }
 
 const valid = {
-  full_name: 'Funmilayo Adeyemi', years_married: '7', phone: '+234 801 234 5678', email: 'Funmi@Example.com',
+  full_name: 'Funmilayo Adeyemi', years_married: '7', occupation: 'Teacher', phone: '+234 801 234 5678', email: 'Funmi@Example.com',
   church: 'Citizens of Light Church', heard_via: 'WhatsApp', bringing_child: 'No',
   consent: true, website: '', elapsed_ms: 45_000,
 }
 
 const onFile = {
-  full_name: 'F A', years_married: 3, phone: '08012345678', email: 'onfile@example.com',
+  full_name: 'F A', years_married: 3, occupation: 'Trader', phone: '08012345678', email: 'onfile@example.com',
   church: 'Citizens of Light Church', church_other: '', heard_via: 'Flyer', heard_other: '', bringing_child: true,
 }
 
@@ -149,7 +149,7 @@ describe('POST /api/register', () => {
     registerAttendee.mockResolvedValue({ status: 'created', id: 'r1' })
     await call({ ...valid, bringing_child: 'Yes', church: 'Other', church_other: 'Living Faith' })
     expect(registerAttendee).toHaveBeenCalledWith('wives-hangout-2026-dev', {
-      full_name: 'Funmilayo Adeyemi', years_married: 7, phone: '08012345678', email: 'funmi@example.com',
+      full_name: 'Funmilayo Adeyemi', years_married: 7, occupation: 'Teacher', phone: '08012345678', email: 'funmi@example.com',
       church: 'Other', church_other: 'Living Faith', heard_via: 'WhatsApp', heard_other: '', bringing_child: true, source: '',
     })
   })
@@ -161,6 +161,7 @@ describe('POST /api/register', () => {
     expect(res.body).toEqual({ status: 'created', venue: 'M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin' })
     expect(sendMail.mock.calls[0][0].to).toBe('funmi@example.com')
     expect(sendMail.mock.calls[0][0].text).toContain('Years married: 7 years')
+    expect(sendMail.mock.calls[0][0].text).toContain('Occupation: Teacher')
     expect(setEmailStatus).toHaveBeenCalledWith('r1', 'SENT')
   })
 

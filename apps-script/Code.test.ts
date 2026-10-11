@@ -69,7 +69,7 @@ function load(opts: {
 }
 
 const reg = (id: string, extra: Record<string, string | number> = {}) => ({
-  id, created_at: '2026-10-09 10:00:00', full_name: 'Funmi', years_married: 7, phone: '08012345678', email: 'f@x.co',
+  id, created_at: '2026-10-09 10:00:00', full_name: 'Funmi', years_married: 7, occupation: 'Banker', phone: '08012345678', email: 'f@x.co',
   church: 'Other', church_other: 'Living Faith', heard_via: 'Other', heard_other: 'Radio', bringing_child: 'No',
   consent_at: '2026-10-09 10:00:00', source: '', ...extra,
 })
@@ -87,6 +87,8 @@ describe('syncFromSupabase (Apps Script)', () => {
     expect(row[gas.headers.indexOf('church_other')]).toBe('Living Faith')
     expect(row[gas.headers.indexOf('synced_at')]).toBeInstanceOf(Date)
     expect(gas.tabsAsked).toEqual(['Registrations'])
+    expect(row[gas.headers.indexOf('occupation')]).toBe('Banker')
+    expect(gas.headers.at(-1)).toBe('occupation') // appended last: existing Sheet rows don't shift
   })
 
   it('sends dev-slug rows to a separate DEV tab, never the real one', () => {

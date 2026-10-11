@@ -14,7 +14,7 @@ async function rpc<T = Record<string, unknown>>(query: string, params: unknown[]
 }
 
 const person = (phone: string, email: string, extra: object = {}) => ({
-  full_name: 'Funmilayo Adeyemi', years_married: 7, phone, email, church: 'Citizens of Light Church', church_other: '',
+  full_name: 'Funmilayo Adeyemi', years_married: 7, occupation: 'Nurse', phone, email, church: 'Citizens of Light Church', church_other: '',
   heard_via: 'WhatsApp', heard_other: '', bringing_child: false, source: 'test', ...extra,
 })
 
@@ -35,6 +35,7 @@ beforeEach(async () => {
   // Fresh schema per test: roll back, then migrate (also proves the pair round-trips).
   await db.exec(sql('001_init.down.sql'))
   await db.exec(sql('001_init.sql'))
+  await db.exec(sql('002_occupation.sql'))
 })
 
 describe('001_init: registrations', () => {
@@ -170,6 +171,53 @@ describe('001_init: Sheet mirror and ops', () => {
   })
 })
 
+describe('002_occupation', () => {
+  it('stores the occupation and returns it in the email details, and to the Sheet as the LAST column', async () => {
+    const r = await register(person('08012345678', 'f@example.com', { occupation: 'Civil servant' }))
+    const [row] = await rpc<{ occupation: string }>('select occupation from public.registrations where id = $1', [r.id])
+    expect(row.occupation).toBe('Civil servant')
+    const dup = await register(person('08012345678', 'x@example.com'))
+    expect(dup.details).toMatchObject({ occupation: 'Civil servant' })
+    const res = await db.query(`select * from public.sheet_pending($1)`, [EVENT])
+    expect(res.fields.map((f) => f.name).at(-1)).toBe('occupation')
+    expect(res.rows[0]).toMatchObject({ occupation: 'Civil servant' })
+  })
+
+  it('is live-safe: a payload without occupation (old code) saves an empty occupation', async () => {
+    const { occupation: _omit, ...old } = person('08012345678', 'f@example.com')
+    const r = await register(old)
+    expect(r.status).toBe('created')
+    const [row] = await rpc<{ occupation: string }>('select occupation from public.registrations where id = $1', [r.id])
+    expect(row.occupation).toBe('')
+  })
+
+  it('keeps rows registered before the migration (occupation = empty)', async () => {
+    await db.exec(sql('002_occupation.down.sql'))
+    const before = await register(person('08012345678', 'f@example.com'))
+    await db.exec(sql('002_occupation.sql'))
+    const [row] = await rpc<{ occupation: string }>('select occupation from public.registrations where id = $1', [before.id])
+    expect(row.occupation).toBe('')
+  })
+
+  it('rejects an occupation over 80 characters at the database level', async () => {
+    await expect(register(person('08012345678', 'f@example.com', { occupation: 'x'.repeat(81) }))).rejects.toThrow(/check constraint/)
+  })
+
+  it('keeps the functions locked down, can be re-run, and rolls back to 001', async () => {
+    for (const fn of ['public.register_attendee(text, jsonb)', 'public.sheet_pending(text, integer)', 'public.registration_details(public.registrations)']) {
+      expect(await anonCanExecute(fn), fn).toBe(false)
+    }
+    await db.exec(sql('002_occupation.sql')) // idempotent
+    await db.exec(sql('002_occupation.down.sql'))
+    expect(await rpc(`select 1 from information_schema.columns where table_name = 'registrations' and column_name = 'occupation'`)).toHaveLength(0)
+    const { occupation: _omit, ...old } = person('08012345678', 'f@example.com')
+    expect((await register(old)).status).toBe('created')
+    const res = await db.query(`select * from public.sheet_pending($1)`, [EVENT])
+    expect(res.fields.map((f) => f.name).at(-1)).toBe('source')
+    expect(await anonCanExecute('public.sheet_pending(text, integer)')).toBe(false)
+  })
+})
+
 describe('001_init: lockdown', () => {
   it('locks tables and functions away from anon/authenticated, with RLS on', async () => {
     const grants = await rpc(
@@ -199,6 +247,7 @@ describe('001_init: lockdown', () => {
   })
 
   it('rolls back cleanly', async () => {
+    await db.exec(sql('002_occupation.down.sql'))
     await db.exec(sql('001_init.down.sql'))
     const [{ n }] = await rpc<{ n: number }>(
       `select count(*)::int as n from pg_tables where tablename in ('registrations', 'rate_limits')`)

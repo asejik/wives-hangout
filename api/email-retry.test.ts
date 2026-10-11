@@ -23,7 +23,7 @@ async function call(authorization?: string, method = 'POST') {
 const row = (id: string) => ({
   id,
   details: {
-    full_name: `${id} A`, years_married: 2, phone: '08012345678', email: `${id}@x.co`, church: 'Citizens of Light Church',
+    full_name: `${id} A`, years_married: 2, occupation: 'Teacher', phone: '08012345678', email: `${id}@x.co`, church: 'Citizens of Light Church',
     church_other: '', heard_via: 'Flyer', heard_other: '', bringing_child: false,
   },
 })

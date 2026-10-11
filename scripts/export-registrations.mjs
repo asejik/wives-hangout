@@ -15,7 +15,7 @@ if (!url || !key || !event) {
 
 const COLUMNS = [
   'id', 'event', 'created_at', 'full_name', 'years_married', 'phone', 'email', 'church', 'church_other',
-  'heard_via', 'heard_other', 'bringing_child', 'consent_at', 'source',
+  'heard_via', 'heard_other', 'bringing_child', 'consent_at', 'source', 'occupation',
   'email_status', 'email_attempts', 'emailed_at', 'sheet_synced_at',
 ]
 const headers = { apikey: key, ...(key.startsWith('sb_') ? {} : { Authorization: `Bearer ${key}` }) }

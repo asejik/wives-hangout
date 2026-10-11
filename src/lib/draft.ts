@@ -4,7 +4,7 @@ import type { RegistrationInput } from '../../shared/registration'
 // Every access is wrapped: private mode, blocked storage or quota errors must never break the form.
 const KEY = 'wives-hangout-draft-v1'
 const FIELDS = [
-  'full_name', 'years_married', 'phone', 'email', 'church', 'church_other', 'heard_via', 'heard_other', 'bringing_child', 'consent',
+  'full_name', 'years_married', 'occupation', 'phone', 'email', 'church', 'church_other', 'heard_via', 'heard_other', 'bringing_child', 'consent',
 ] as const
 
 export function loadDraft(): Partial<RegistrationInput> {

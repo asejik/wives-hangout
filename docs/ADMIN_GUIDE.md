@@ -23,7 +23,7 @@ For the Citizens of Light Church team. No technical knowledge needed, except whe
 - **Registrations** tab: one row per person, newest at the bottom.
 - **Wives Hangout → Sync now** (in the Sheet's menu bar) copies new registrations immediately instead of waiting up to 5 minutes.
 - **The Sheet is a copy.** Editing or deleting a row in the Sheet does **not** change the real database. To remove someone, see section 4.
-- **Columns:** `full_name`, `years_married` (0 = less than a year), `phone` (WhatsApp), `email`, `church` (+ `church_other` when "Other"), `heard_via` (+ `heard_other`), **`bringing_child`** (Yes = will need to bring a child), `created_at`, `source` ("qr" = came from the flyer's QR code).
+- **Columns:** `full_name`, `years_married` (0 = less than a year), `phone` (WhatsApp), `email`, `church` (+ `church_other` when "Other"), `heard_via` (+ `heard_other`), **`bringing_child`** (Yes = will need to bring a child), `created_at`, `source` ("qr" = came from the flyer's QR code), and **`occupation`** (the last column, added 11 October; blank for anyone who registered before then).
 - **Childcare planning:** Data → Create a filter, then set `bringing_child` = Yes. The daily summary email also gives the count.
 - **Who can see it:** shared only with clcchurchmedia@gmail.com, as a **Viewer**. Don't change it to "Anyone with the link"; it holds phone numbers and emails. (Editors could see the database key in the script settings.)
 

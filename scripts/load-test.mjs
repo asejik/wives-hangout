@@ -31,6 +31,7 @@ const rand = (len) => Array.from({ length: len }, () => Math.floor(Math.random()
 const person = (i, phone = '090' + rand(8)) => ({
   full_name: `LOADTEST ${run} ${i}`,
   years_married: String(typeof i === 'number' ? i % 30 : 5),
+  occupation: 'Load tester',
   phone,
   email: `loadtest-${run}-${i}@example.invalid`,
   church: i % 3 ? 'Citizens of Light Church' : 'Other',
