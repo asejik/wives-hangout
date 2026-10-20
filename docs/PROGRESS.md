@@ -132,3 +132,10 @@
 - **Email:** an "Occupation" row ("Not given" for rows from before the field). **Sheet:** `occupation` appended last in `Code.gs` (setupSheet adds the header). **CSV export**, privacy notice ("what we collect", updated 11 Oct), load test, admin guide and README updated.
 - **Checks:** typecheck, lint clean; **123 unit tests** (PGlite: stores/returns occupation, last Sheet column, old payload → '', pre-migration rows kept, >80 rejected, lockdown, re-runnable, rolls back to 001); **Playwright 8/8**; build OK; 360px no sideways scroll.
 - **Deploy order:** (1) builder runs 002 in Supabase; (2) builder re-pastes Code.gs and runs setupSheet; (3) push main. A stale open tab (old page) submitting after the push gets a field error it can't show; a refresh fixes it. The window is minutes.
+
+## 2026-10-20 · Registration closes tonight, 11:59 PM WAT (CONFIG)
+- **Builder request:** close at 11:59 PM WAT on 20 Oct (was 24 Oct, 8 PM).
+- `REGISTRATION_CLOSES_AT` in Production replaced with `2026-10-20T23:59:00+01:00` (CLI; now stored as sensitive, so it can't be read back), then **redeployed** the current production build (same code). Status after the redeploy: `open`, which proves the value parses (a bad value makes production refuse to open). The window logic run on that exact value: 23:58:59 → open, 23:59:00 → closed. Smoke 11/11.
+- **After closing:** the page shows "Registration is closed"; `/api/register` returns 403 `closed` for everyone, including tabs left open (the server enforces it). `/api/email-retry` keeps working, so pending confirmation emails still go out.
+- **No other public way in:** all 15 earlier deployment URLs and the m1/m2 preview aliases return 302 (Vercel login) for pages and 401 for `/api/register`. Only `wives-hangout.vercel.app` is public, and it closes.
+- **Rollback / reopen:** set `REGISTRATION_CLOSES_AT` to a later time in Vercel (Production), then redeploy (ADMIN_GUIDE §5).

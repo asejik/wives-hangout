@@ -7,7 +7,7 @@ Registration site for **Wives Hangout** by **Citizens of Light Church**, Ilorin.
 | **Theme** | Marriage, Motherhood and Ministry |
 | **When** | Saturday 24 October 2026, 4:00 PM |
 | **Where** | M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin (changed 10 Oct from Freedom Dome). **Revealed only after registering** (success screen and email); not on the public page. |
-| **Registration closes** | Saturday 24 October 2026, 8:00 PM (so people can register at the venue) |
+| **Registration closes** | **Tuesday 20 October 2026, 11:59 PM WAT** (moved forward from 24 Oct, 8:00 PM; builder request) |
 | **Live site** | https://wives-hangout.vercel.app |
 | **Privacy notice** | https://wives-hangout.vercel.app/privacy |
 | **QR code** | [`docs/launch/wives-hangout-qr.png`](docs/launch/wives-hangout-qr.png) (opens `/?src=qr`) |

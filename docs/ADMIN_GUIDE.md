@@ -7,7 +7,7 @@ For the Citizens of Light Church team. No technical knowledge needed, except whe
 - **Contact address on the site:** clcchurchmedia@gmail.com
 - **Event:** Saturday 24 October 2026, 4:00 PM, M&S Luxury Hotel, Ojomu Street, Off Basin Road, Ilorin (changed 10 October; it was Freedom Dome)
 - **The venue is not shown on the registration page.** People see it only after registering: on the confirmation screen and in their email.
-- **Registration closes:** Saturday 24 October 2026, 8:00 PM (so people can still register at the venue)
+- **Registration closes:** **Tuesday 20 October 2026, 11:59 PM** (moved forward from 24 October). After that the page shows "Registration is closed" and the server refuses any registration, including from pages left open.
 
 ---
 
@@ -80,7 +80,7 @@ node --env-file=.env.local scripts/export-registrations.mjs --event wives-hangou
 
 ## 8. After the event (builder)
 
-1. Registration closes by itself at 8PM on the 24th.
+1. Registration closed by itself at 11:59 PM on 20 October.
 2. Delete the Gmail **app password** if The Awakening no longer needs it (Google Account → Security → App passwords). It's shared.
 3. Rotate the Supabase secret key; remove `RETRY_SECRET` from Vercel; delete the Apps Script triggers.
 4. Final CSV export for the team.
