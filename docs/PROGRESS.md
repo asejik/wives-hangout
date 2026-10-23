@@ -149,3 +149,13 @@
 - **Table QR:** `docs/launch/wives-hangout-menu-qr.png` (→ /menu), decoded at 140–2520px + phone-photo copy.
 - **Checks:** typecheck, lint clean; **147 unit tests** (8 new PGlite menu tests, 9 endpoint tests, 4 Sheet tests, `parseWho`); build OK; venue still absent from `dist/`; 360px no sideways scroll.
 - **Pending:** builder runs migration 003 → live burst test on the dev slug (`scripts/menu-load-test.mjs`) + Playwright menu flow → builder re-pastes Code.gs + `installTrigger` → push.
+
+## 2026-10-23 · Meal selection: live database tests passed
+- **Migration 003 applied** (builder). Both slugs: 12 dishes, 215 plates, 215 remaining; `meal_choices` reachable by the server only.
+- **Burst test (dev slug, local server, `scripts/menu-load-test.mjs`):**
+  - 30 people choosing a dish with 10 left at the same moment → **10 created, 20 sold_out, remaining 0**, 10 unique codes, p95 1.6s (laptop → London); a winner's second attempt → `already_chosen`.
+  - **20 people, 1 plate → exactly 1 created, 19 sold_out.**
+  - Cleanup: dev registrations deleted (cascade returned the plates), dev menu restored.
+- **Playwright 9/9**, including the new menu journey: unknown number refused; found by phone; choose → confirm → pass with code; count shows "Your choice"; no second choice; found again by email (in capitals) showing the pass.
+- **After the tests:** dev = 0 registrations, 0 meals, 215/215; **production = 211 registrations untouched, 0 meals, 215/215.**
+- **Next:** builder re-pastes Code.gs + runs `installTrigger` → push → smoke → share /menu.
