@@ -126,7 +126,7 @@ export function MenuPage() {
           <Sparkle size={22} className="mx-auto text-magenta" />
           <h1 className="mt-2 font-display text-h1 font-semibold text-burgundy">Choose your meal</h1>
           <p className="mt-1 font-text text-lead text-muted">One plate per person, and you can't change it after.</p>
-          <p className="mt-1 font-text text-small text-muted">Choosing closes Sat 24 Oct, 6:00 PM.</p>
+          <p className="mt-1 font-text text-small text-muted">Choosing closes {EVENT.menuClosesLabel}.</p>
         </div>
 
         {state === 'closed' && <Banner text="Meal selection has closed. Please speak to a host." />}

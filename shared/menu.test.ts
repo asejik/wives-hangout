@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { EVENT } from './event.js'
 import { parseWho } from './menu.js'
 
 describe('parseWho', () => {
@@ -11,5 +12,13 @@ describe('parseWho', () => {
   })
   it('rejects anything else', () => {
     for (const bad of ['', '123', 'funmi@', 'Funmilayo', 42, null]) expect(parseWho(bad)).toBeNull()
+  })
+})
+
+describe('menu closing time', () => {
+  it('the label on the page matches the time the server enforces (Lagos time)', () => {
+    const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Lagos', ...opts }).format(new Date(EVENT.menuClosesAt))
+    expect(EVENT.menuClosesLabel).toContain(fmt({ hour: 'numeric', minute: '2-digit' })) // "8:00 PM"
+    expect(EVENT.menuClosesLabel).toContain(`${fmt({ day: 'numeric' })} ${fmt({ month: 'short' })}`) // "24 Oct"
   })
 })

@@ -45,15 +45,15 @@ describe('GET /api/menu', () => {
     expect(res.headers['cache-control']).toContain('s-maxage=3')
     expect(menuStatus).toHaveBeenCalledWith('wives-hangout-2026-dev')
   })
-  it('says closed after the closing time (default: 6 PM on the day)', async () => {
+  it('says closed after the closing time (default: 8 PM on the day)', async () => {
     process.env.MENU_CLOSES_AT = '2020-01-01T00:00:00+01:00'
     expect((await call(menu, 'GET')).body).toMatchObject({ state: 'closed' })
     delete process.env.MENU_CLOSES_AT
     vi.useFakeTimers({ toFake: ['Date'] })
     try {
-      vi.setSystemTime(new Date('2026-10-24T17:59:59+01:00'))
+      vi.setSystemTime(new Date('2026-10-24T19:59:59+01:00'))
       expect((await call(menu, 'GET')).body).toMatchObject({ state: 'open' })
-      vi.setSystemTime(new Date('2026-10-24T18:00:00+01:00'))
+      vi.setSystemTime(new Date('2026-10-24T20:00:00+01:00'))
       expect((await call(menu, 'GET')).body).toMatchObject({ state: 'closed' })
     } finally {
       vi.useRealTimers()
