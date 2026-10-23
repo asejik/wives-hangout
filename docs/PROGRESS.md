@@ -159,3 +159,6 @@
 - **Playwright 9/9**, including the new menu journey: unknown number refused; found by phone; choose → confirm → pass with code; count shows "Your choice"; no second choice; found again by email (in capitals) showing the pass.
 - **After the tests:** dev = 0 registrations, 0 meals, 215/215; **production = 211 registrations untouched, 0 meals, 215/215.**
 - **Next:** builder re-pastes Code.gs + runs `installTrigger` → push → smoke → share /menu.
+
+## 2026-10-23 · Meal selection LIVE
+- Builder re-pasted Code.gs + ran installTrigger; pushed main. `/menu` live: smoke 13/13 (menu open with 12 dishes; registration still closed, register returns 403). Live lookup of an unregistered number returns `not_found`. Venue absent from all 7 live scripts. Closes 2026-10-24 18:00 WAT.
