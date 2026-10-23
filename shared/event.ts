@@ -18,6 +18,9 @@ export const EVENT = {
   theme: 'Marriage, Motherhood and Ministry',
   /** Shown under the hero as "POWERED BY: BIRTHING THE SEED" (builder request, 2026-10-10). */
   poweredBy: 'Birthing the Seed',
+  /** Meal selection at /menu (builder, 2026-10-23): opens on deploy, closes at 6 PM on the day.
+   *  MENU_OPENS_AT / MENU_CLOSES_AT env vars override these on the server. */
+  menuClosesAt: '2026-10-24T18:00:00+01:00',
   /** For structured data (SEO). The end time isn't known, so the end is a date only. */
   schedule: { start: '2026-10-24T16:00:00+01:00', endDate: '2026-10-24' },
   /** City only, for structured data: the venue itself is not public. */

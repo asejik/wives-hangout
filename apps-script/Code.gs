@@ -34,7 +34,8 @@ var TABS = {
 var DEV_TAB = 'Registrations (DEV)';
 
 // Written with a leading ' so Sheets keeps it as text: it drops the leading 0 of "08012345678".
-var FORCE_TEXT = { phone: true };
+// Meal codes too: a code like "2E45" would otherwise become a number.
+var FORCE_TEXT = { phone: true, code: true };
 var SYNC_BATCH = 500;
 var ALERT_REPEAT_SECONDS = 21600; // the same alert at most every 6 hours
 var SPIKE_PER_HOUR = 60;          // expected headcount is 100–150 in total
@@ -88,14 +89,15 @@ function setupSheet() {
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
     var fn = t.getHandlerFunction();
-    if (fn === 'syncFromSupabase' || fn === 'dailyDigest') ScriptApp.deleteTrigger(t);
+    if (fn === 'syncFromSupabase' || fn === 'dailyDigest' || fn === 'syncMeals') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('syncFromSupabase').timeBased().everyMinutes(5).create();
+  ScriptApp.newTrigger('syncMeals').timeBased().everyMinutes(5).create();
   ScriptApp.newTrigger('dailyDigest').timeBased().everyDays(1).atHour(7).create();
 }
 
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('Wives Hangout').addItem('Sync now', 'syncNow').addToUi();
+  SpreadsheetApp.getUi().createMenu('Wives Hangout').addItem('Sync now', 'syncNow').addItem('Sync meals now', 'syncMeals').addToUi();
 }
 
 function syncNow() {
@@ -273,4 +275,42 @@ function log_(level, action, message) {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Log')
       .appendRow([new Date(), level, action, String(message).slice(0, 500)]);
   } catch (ignored) { /* logging must never break a run */ }
+}
+
+/**
+ * Meal selection (/menu, migration 003): rewrites two tabs from Supabase each run (a full snapshot,
+ * ~200 rows): "Meals" (who chose what, with the code servers check on the screenshot) and
+ * "Meal totals" (per dish, for the kitchen). Runs on its own 5-minute trigger, so it can never
+ * hold up the registrations sync. Returns the number of meals written.
+ */
+var MEAL_HEADERS = ['chosen_at', 'full_name', 'phone', 'dish', 'code'];
+var TOTAL_HEADERS = ['dish', 'quantity', 'chosen', 'remaining'];
+
+function syncMeals() {
+  try {
+    var meals = rpc_('meal_list', { p_event: slug_() }) || [];
+    var menu = rpc_('menu_status', { p_event: slug_() }) || [];
+    var suffix = isDev_() ? ' (DEV)' : '';
+    writeTab_('Meals' + suffix, MEAL_HEADERS, meals.map(function (m) {
+      return MEAL_HEADERS.map(function (h) { return cell_(h, m[h]); });
+    }));
+    var totals = menu.map(function (m) { return [m.name, m.quantity, m.quantity - m.remaining, m.remaining]; });
+    var sum = function (i) { return totals.reduce(function (n, r) { return n + r[i]; }, 0); };
+    totals.push(['TOTAL', sum(1), sum(2), sum(3)]);
+    writeTab_('Meal totals' + suffix, TOTAL_HEADERS, totals);
+    return meals.length;
+  } catch (err) {
+    log_('error', 'syncMeals', String(err));
+    return null;
+  }
+}
+
+function writeTab_(name, headers, rows) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
+  sheet.clearContents();
+  var values = [headers].concat(rows);
+  sheet.getRange(1, 1, values.length, headers.length).setValues(values);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+  sheet.setFrozenRows(1);
 }

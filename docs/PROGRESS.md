@@ -139,3 +139,13 @@
 - **After closing:** the page shows "Registration is closed"; `/api/register` returns 403 `closed` for everyone, including tabs left open (the server enforces it). `/api/email-retry` keeps working, so pending confirmation emails still go out.
 - **No other public way in:** all 15 earlier deployment URLs and the m1/m2 preview aliases return 302 (Vercel login) for pages and 401 for `/api/register`. Only `wives-hangout.vercel.app` is public, and it closes.
 - **Rollback / reopen:** set `REGISTRATION_CLOSES_AT` to a later time in Vercel (Production), then redeploy (ADMIN_GUIDE §5).
+
+## 2026-10-23 · Meal selection at /menu (FEATURE + DATABASE)
+- **Builder decisions:** she finds herself by the **phone or email** she registered with (no public list of names); opens tonight, closes **6 PM Sat 24 Oct**; **one meal, no changes**; guests and walk-ins handled manually. 211 registrations against 215 plates.
+- **Migration `003_menu.sql`** (+ down), ADDITIVE: `menu_items` (12 dishes seeded for the production and dev slugs, 215 plates) and `meal_choices` (PK = registration: one per person; 4-char code unique per event); RLS on, no grants; trigger: deleting a choice returns the plate; functions `menu_status`, `menu_lookup` (name + existing choice only), `choose_meal` (atomic: not found / already chosen / unknown dish / sold out / created; the last plate goes to exactly one person; the same-person race resolved by the PK), `meal_list` (for the Sheet). Registrations untouched.
+- **API:** `GET /api/menu` (state + counts, `s-maxage=3`), `POST /api/menu-lookup`, `POST /api/menu-choose` (window check; rate limit 300/10 min per network because of venue Wi-Fi; `MENU_RATE_LIMIT_MAX` for tests).
+- **Page `/menu`** (pre-rendered, `noindex`): compact hero, one "phone number or email" box, dish cards with "N left" (red at ≤ 3, "Finished" at 0), confirm dialog, **screenshot pass** (name, dish, code, time). Refresh keeps who she is (sessionStorage).
+- **Sheet:** `syncMeals()` on its own 5-minute trigger writes "Meals" and "Meal totals" snapshots (phone and code forced to text; formula-guarded); "Sync meals now" menu item. Separate "(DEV)" tabs for the dev slug.
+- **Table QR:** `docs/launch/wives-hangout-menu-qr.png` (→ /menu), decoded at 140–2520px + phone-photo copy.
+- **Checks:** typecheck, lint clean; **147 unit tests** (8 new PGlite menu tests, 9 endpoint tests, 4 Sheet tests, `parseWho`); build OK; venue still absent from `dist/`; 360px no sideways scroll.
+- **Pending:** builder runs migration 003 → live burst test on the dev slug (`scripts/menu-load-test.mjs`) + Playwright menu flow → builder re-pastes Code.gs + `installTrigger` → push.

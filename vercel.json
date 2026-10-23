@@ -10,6 +10,9 @@
     },
     "api/email-retry.ts": {
       "maxDuration": 60
+    },
+    "api/menu-choose.ts": {
+      "maxDuration": 30
     }
   },
   "headers": [

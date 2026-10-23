@@ -21,7 +21,18 @@ type Summary = Partial<Record<'total' | 'bringing_child' | 'last_hour' | 'last_2
 function load(opts: {
   pending?: Record<string, string | number>[]; existingIds?: string[]; retryUrl?: string; failRpc?: string
   alertEmail?: string; slug?: string; summary?: Summary
+  meals?: Record<string, string>[]; menu?: { name: string; quantity: number; remaining: number }[]
 } = {}) {
+  // Separate fake tabs for the meal snapshots (row 1 = header).
+  const tabs = new Map<string, Cell[][]>()
+  const tab = (name: string) => ({
+    clearContents: () => tabs.set(name, []),
+    getRange: (row: number) => ({
+      setValues: (values: unknown[][]) => values.forEach((v, i) => (tabs.get(name)![row - 1 + i] = v.map(sheetsCoerce))),
+      setFontWeight: () => {},
+    }),
+    setFrozenRows: () => {},
+  })
   const tabsAsked: string[] = []
   const rows: Cell[][] = (opts.existingIds ?? []).map((id) => [id])
   const calls: Call[] = []
@@ -43,7 +54,13 @@ function load(opts: {
   }
   const response = (code: number, body: unknown) => ({ getResponseCode: () => code, getContentText: () => (body === undefined ? '' : JSON.stringify(body)) })
   const globals = {
-    SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: (name: string) => (tabsAsked.push(name), sheet) }), flush: () => {} },
+    SpreadsheetApp: {
+      getActiveSpreadsheet: () => ({
+        getSheetByName: (name: string) => (name.startsWith('Meal') ? (tabs.has(name) ? tab(name) : null) : (tabsAsked.push(name), sheet)),
+        insertSheet: (name: string) => (tabs.set(name, []), tab(name)),
+      }),
+      flush: () => {},
+    },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
     CacheService: { getScriptCache: () => ({ get: (k: string) => cache.get(k) ?? null, put: (k: string, v: string) => cache.set(k, v) }) },
     MailApp: { sendEmail: (to: string, subject: string, body: string) => mails.push({ to, subject, body }) },
@@ -55,16 +72,19 @@ function load(opts: {
         calls.push({ fn, body: JSON.parse(o.payload ?? '{}') })
         if (fn === opts.failRpc) return response(500, { message: 'boom' })
         if (fn === 'sheet_pending') return response(200, opts.pending ?? [])
+        if (fn === 'meal_list') return response(200, opts.meals ?? [])
+        if (fn === 'menu_status') return response(200, opts.menu ?? [])
         if (fn === 'ops_summary') return response(200, { total: 0, bringing_child: 0, last_hour: 0, last_24h: 0, unsynced: 0, unsynced_oldest_minutes: 0, failed: 0, deferred: 0, exhausted: 0, logged: 0, sent: 0, ...opts.summary })
         return response(200, 1)
       },
     },
   }
   const src = readFileSync(new URL('./Code.gs', import.meta.url), 'utf8')
-  const fns = new Function(...Object.keys(globals), `${src}; return { syncFromSupabase, dailyDigest, REGISTRATION_HEADERS };`)(...Object.values(globals))
+  const fns = new Function(...Object.keys(globals), `${src}; return { syncFromSupabase, dailyDigest, syncMeals, REGISTRATION_HEADERS };`)(...Object.values(globals))
   return {
     sync: fns.syncFromSupabase as () => number | null, digest: fns.dailyDigest as () => void,
     headers: fns.REGISTRATION_HEADERS as string[], rows, calls, pings, mails, tabsAsked,
+    syncMeals: fns.syncMeals as () => number | null, tabs,
   }
 }
 
@@ -206,5 +226,43 @@ describe('alerts and daily digest', () => {
     expect(g.mails[0].subject).toBe('[Wives Hangout] Daily summary: 112 registered (+37 in 24h)')
     expect(g.mails[0].body).toContain('Need to bring a child: 9')
     expect(g.mails[0].body).toContain('Emails failing (still retrying): 2')
+  })
+})
+
+describe('syncMeals (Apps Script)', () => {
+  const meals = [
+    { chosen_at: '2026-10-23 21:00:00', full_name: 'Funmi A', phone: '08012345678', dish: 'Fried rice', code: '2E45' },
+    { chosen_at: '2026-10-23 21:01:00', full_name: '=EVIL()', phone: '08099999999', dish: 'Asun rice', code: 'K7QX' },
+  ]
+  const menu = [{ name: 'Fried rice', quantity: 10, remaining: 9 }, { name: 'Asun rice', quantity: 10, remaining: 9 }]
+
+  it('writes the Meals tab (phone and code kept as text, formulas neutralised) and the totals', () => {
+    const g = load({ meals, menu })
+    expect(g.syncMeals()).toBe(2)
+    const m = g.tabs.get('Meals')!
+    expect(m[0]).toEqual(['chosen_at', 'full_name', 'phone', 'dish', 'code'])
+    expect(m[1]).toEqual(['2026-10-23 21:00:00', 'Funmi A', '08012345678', 'Fried rice', '2E45'])
+    expect(m[2][1]).toBe('=EVIL()') // stored as text, not a formula
+    const totals = g.tabs.get('Meal totals')!
+    expect(totals[1]).toEqual(['Fried rice', 10, 1, 9])
+    expect(totals.at(-1)).toEqual(['TOTAL', 20, 2, 18])
+  })
+
+  it('replaces the snapshot each run (no duplicates)', () => {
+    const g = load({ meals, menu })
+    g.syncMeals(); g.syncMeals()
+    expect(g.tabs.get('Meals')!).toHaveLength(3)
+  })
+
+  it('uses separate tabs for the dev slug', () => {
+    const g = load({ meals, menu, slug: 'wives-hangout-2026-dev' })
+    g.syncMeals()
+    expect(g.tabs.has('Meals (DEV)')).toBe(true)
+    expect(g.tabs.has('Meals')).toBe(false)
+  })
+
+  it('never throws (logs instead), e.g. before migration 003 is run', () => {
+    const g = load({ failRpc: 'meal_list' })
+    expect(g.syncMeals()).toBeNull()
   })
 })

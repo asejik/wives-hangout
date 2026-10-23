@@ -33,9 +33,11 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // Fresh schema per test: roll back, then migrate (also proves the pair round-trips).
+  await db.exec(sql('003_menu.down.sql'))
   await db.exec(sql('001_init.down.sql'))
   await db.exec(sql('001_init.sql'))
   await db.exec(sql('002_occupation.sql'))
+  await db.exec(sql('003_menu.sql'))
 })
 
 describe('001_init: registrations', () => {
@@ -218,6 +220,97 @@ describe('002_occupation', () => {
   })
 })
 
+describe('003_menu', () => {
+  const lookup = async (phone: string, email = '', event = EVENT) =>
+    (await rpc<{ r: Record<string, any> }>('select public.menu_lookup($1, $2, $3) as r', [event, phone, email]))[0].r
+  const choose = async (phone: string, item: string, email = '', event = EVENT) =>
+    (await rpc<{ r: Record<string, any> }>('select public.choose_meal($1, $2, $3, $4) as r', [event, phone, email, item]))[0].r
+  const remaining = async (item: string, event = EVENT) =>
+    (await rpc<{ remaining: number }>('select remaining from public.menu_items where event = $1 and item_id = $2', [event, item]))[0].remaining
+
+  it('seeds the 12 dishes (215 plates) for production and dev, in the listed order', async () => {
+    const menu = await rpc<{ item_id: string; quantity: number; remaining: number }>(`select * from public.menu_status($1)`, [EVENT])
+    expect(menu).toHaveLength(12)
+    expect(menu[0].item_id).toBe('ofada-rice-sauce')
+    expect(menu.at(-1)).toMatchObject({ item_id: 'jollof-rice-chicken', quantity: 75, remaining: 75 })
+    expect(menu.reduce((n, m) => n + m.quantity, 0)).toBe(215)
+    expect(await rpc(`select * from public.menu_status($1)`, [DEV])).toHaveLength(12)
+  })
+
+  it('finds a registrant by phone or by email (case-insensitive), revealing only her name', async () => {
+    await register(person('08012345678', 'funmi@example.com'))
+    expect(await lookup('08012345678')).toEqual({ status: 'found', full_name: 'Funmilayo Adeyemi', choice: null })
+    expect(await lookup('', 'FUNMI@example.com')).toMatchObject({ status: 'found', full_name: 'Funmilayo Adeyemi' })
+    expect(await lookup('09099999999')).toEqual({ status: 'not_found' })
+    expect(await lookup('', '')).toEqual({ status: 'not_found' })
+    expect(await lookup('08012345678', '', DEV)).toEqual({ status: 'not_found' }) // events stay apart
+  })
+
+  it('takes one plate, records the choice with a code, and refuses a second choice', async () => {
+    await register(person('08012345678', 'funmi@example.com'))
+    const r = await choose('08012345678', 'fried-rice')
+    expect(r).toMatchObject({ status: 'created', full_name: 'Funmilayo Adeyemi', choice: { item_id: 'fried-rice', item_name: 'Fried rice' } })
+    expect(r.choice.code).toMatch(/^[2-9A-HJKMNP-Z]{4}$/)
+    expect(await remaining('fried-rice')).toBe(9)
+    // Coming back (even by email, even for another dish) shows the same choice and takes nothing.
+    const again = await choose('', 'asun-rice', 'funmi@example.com')
+    expect(again).toMatchObject({ status: 'already_chosen', choice: { item_id: 'fried-rice', code: r.choice.code } })
+    expect(await remaining('asun-rice')).toBe(10)
+    expect((await lookup('08012345678')).choice).toMatchObject({ item_name: 'Fried rice', code: r.choice.code })
+  })
+
+  it('refuses when a dish is finished, without recording anything', async () => {
+    await db.query(`update public.menu_items set remaining = 1 where event = $1 and item_id = 'asun-rice'`, [EVENT])
+    await register(person('08011111111', 'a@example.com'))
+    await register(person('08022222222', 'b@example.com'))
+    expect((await choose('08011111111', 'asun-rice')).status).toBe('created')
+    expect(await choose('08022222222', 'asun-rice')).toEqual({ status: 'sold_out' })
+    expect(await remaining('asun-rice')).toBe(0)
+    expect((await lookup('08022222222')).choice).toBeNull() // she can still pick something else
+    expect((await choose('08022222222', 'fried-rice')).status).toBe('created')
+  })
+
+  it('rejects unknown people and unknown dishes', async () => {
+    await register(person('08012345678', 'funmi@example.com'))
+    expect(await choose('09099999999', 'fried-rice')).toEqual({ status: 'not_found' })
+    expect(await choose('08012345678', 'caviar')).toEqual({ status: 'unknown_item' })
+  })
+
+  it('a reset (deleting the choice) puts the plate back, as does deleting the registration', async () => {
+    const a = await register(person('08011111111', 'a@example.com'))
+    await register(person('08022222222', 'b@example.com'))
+    await choose('08011111111', 'fried-rice')
+    await choose('08022222222', 'fried-rice')
+    expect(await remaining('fried-rice')).toBe(8)
+    await db.query(`delete from public.meal_choices where registration_id = $1`, [a.id])
+    expect(await remaining('fried-rice')).toBe(9)
+    expect((await lookup('08011111111')).choice).toBeNull()
+    await db.query(`delete from public.registrations where phone = '08022222222'`)
+    expect(await remaining('fried-rice')).toBe(10)
+  })
+
+  it('lists choices for the Sheet (name, phone, dish, code)', async () => {
+    await register(person('08012345678', 'funmi@example.com'))
+    const r = await choose('08012345678', 'jollof-rice-chicken')
+    const [row] = await rpc(`select * from public.meal_list($1)`, [EVENT])
+    expect(row).toMatchObject({ full_name: 'Funmilayo Adeyemi', phone: '08012345678', dish: 'Jollof rice and chicken', code: r.choice.code })
+  })
+
+  it('is locked down and rolls back without touching registrations', async () => {
+    for (const fn of ['public.menu_status(text)', 'public.menu_lookup(text, text, text)', 'public.choose_meal(text, text, text, text)', 'public.meal_list(text)', 'public.menu_find_registrant(text, text, text)']) {
+      expect(await anonCanExecute(fn), fn).toBe(false)
+    }
+    const grants = await rpc(`select grantee from information_schema.role_table_grants where table_name in ('menu_items', 'meal_choices') and grantee in ('anon', 'authenticated')`)
+    expect(grants).toHaveLength(0)
+    const rls = await rpc<{ relrowsecurity: boolean }>(`select relrowsecurity from pg_class where relname in ('menu_items', 'meal_choices')`)
+    expect(rls.every((r) => r.relrowsecurity)).toBe(true)
+    await register(person('08012345678', 'funmi@example.com'))
+    await db.exec(sql('003_menu.down.sql'))
+    expect(await rpc(`select 1 from pg_tables where tablename in ('menu_items', 'meal_choices')`)).toHaveLength(0)
+    expect((await rpc<{ n: number }>('select count(*)::int as n from public.registrations'))[0].n).toBe(1)
+  })
+})
+
 describe('001_init: lockdown', () => {
   it('locks tables and functions away from anon/authenticated, with RLS on', async () => {
     const grants = await rpc(
@@ -240,13 +333,17 @@ describe('001_init: lockdown', () => {
   it("revokes public EXECUTE on Supabase's rls_auto_enable helper when present (idempotent)", async () => {
     await db.exec(`create function public.rls_auto_enable() returns void language sql security definer as 'select'`)
     await db.exec(`grant execute on function public.rls_auto_enable() to anon, authenticated`)
+    await db.exec(sql('003_menu.down.sql'))
     await db.exec(sql('001_init.down.sql'))
     await db.exec(sql('001_init.sql'))
+    await db.exec(sql('002_occupation.sql'))
+    await db.exec(sql('003_menu.sql'))
     expect(await anonCanExecute('public.rls_auto_enable()')).toBe(false)
     await db.exec('drop function public.rls_auto_enable()')
   })
 
   it('rolls back cleanly', async () => {
+    await db.exec(sql('003_menu.down.sql'))
     await db.exec(sql('002_occupation.down.sql'))
     await db.exec(sql('001_init.down.sql'))
     const [{ n }] = await rpc<{ n: number }>(

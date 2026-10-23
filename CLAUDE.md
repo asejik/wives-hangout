@@ -37,6 +37,7 @@ Vite + React 19 + TypeScript + Tailwind CSS 4 (pre-rendered at build, then hydra
 - **CSP:** scripts `'self'` only; inline styles allowed (inlined CSS).
 - `og:image` is `og.jpg?v=<content hash>` (vite.config.ts) because Facebook/WhatsApp cache by URL.
 - No secrets in `VITE_` variables.
+- **Meal selection (`/menu`, migration 003):** registrants find themselves by registered phone OR email (`shared/menu.ts` `parseWho`), see the 12 dishes with live counts (`GET /api/menu`, CDN-cached 3s, polled every 5s), and choose once (`POST /api/menu-choose` → `choose_meal()`: one row per registration in `meal_choices`, atomic `remaining - 1`, 4-char code). Deleting a choice puts the plate back (trigger). Window: open on deploy until `EVENT.menuClosesAt` (2026-10-24 18:00 WAT; `MENU_OPENS_AT`/`MENU_CLOSES_AT` override). Sheet tabs "Meals" and "Meal totals" are snapshots (`syncMeals`, own trigger). Lookup returns the name only; no list of names is ever shown.
 - **The venue is private until registration** (Pastor's request). It lives only in `api/_lib/venue.ts` (server only) and reaches people via `/api/register`'s 201 reply (success screen) and the email. Never put it in `shared/`, `src/`, `index.html` or the JSON-LD (city only). `api/_lib/venue.test.ts` and `scripts/smoke.mjs` fail if it leaks into the page.
 
 ## Visual identity

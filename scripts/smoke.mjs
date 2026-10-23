@@ -65,6 +65,16 @@ await check('/privacy loads (pre-rendered)', async () => {
   expect(r.status === 200 && html.includes('Privacy notice') && html.includes('24 January 2027'), `HTTP ${r.status}`)
 })
 
+await check('/menu loads (pre-rendered, not indexed) and /api/menu answers', async () => {
+  const r = await get('/menu')
+  const html = await r.text()
+  expect(r.status === 200 && html.includes('Choose your meal') && html.includes('noindex'), `HTTP ${r.status}`)
+  const m = await get('/api/menu')
+  const body = await m.json()
+  expect(m.status === 200 && ['open', 'not_open', 'closed'].includes(body.state), `HTTP ${m.status} ${JSON.stringify(body).slice(0, 120)}`)
+  return `state=${body.state}, ${body.items?.length ?? 0} dishes`
+})
+
 await check('og.jpg is served as an image', async () => {
   const r = await get('/og.jpg')
   expect(r.status === 200 && (r.headers.get('content-type') ?? '').startsWith('image/'), `HTTP ${r.status} ${r.headers.get('content-type')}`)
@@ -98,6 +108,12 @@ await check('/api/register runs (no crash) and rejects an empty body', async () 
   const r = await get('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
   expect(r.status !== 500 && r.status < 600, `HTTP ${r.status}: the function crashed (check the Vercel logs)`)
   expect([400, 403, 429, 503, 200].includes(r.status), `unexpected HTTP ${r.status}`)
+  return `HTTP ${r.status}`
+})
+
+await check('/api/menu-choose runs (no crash) and rejects an empty body', async () => {
+  const r = await get('/api/menu-choose', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+  expect([400, 403, 503].includes(r.status), `HTTP ${r.status}`)
   return `HTTP ${r.status}`
 })
 

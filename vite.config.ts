@@ -79,7 +79,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), seo()],
   build: {
     rollupOptions: {
-      input: { main: 'index.html', privacy: 'privacy.html' },
+      input: { main: 'index.html', privacy: 'privacy.html', menu: 'menu.html' },
     },
   },
 })

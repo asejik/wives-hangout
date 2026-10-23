@@ -85,3 +85,28 @@ node --env-file=.env.local scripts/export-registrations.mjs --event wives-hangou
 3. Rotate the Supabase secret key; remove `RETRY_SECRET` from Vercel; delete the Apps Script triggers.
 4. Final CSV export for the team.
 5. **Delete all registration details by 24 January 2027** (the privacy notice promises this): delete the Supabase project, or run `delete from public.registrations;`, and clear the Sheet. The Supabase project may be deleted sooner to free a slot for other church projects.
+
+## 9. Meal selection (/menu)
+
+- **Link:** https://wives-hangout.vercel.app/menu · **Table QR:** `docs/launch/wives-hangout-menu-qr.png`
+- **Open from the evening of 23 October until 6:00 PM on Saturday 24 October.** After that the page says "Meal selection has closed".
+- **How it works:** she types the **phone number or email she registered with**, sees "Hi, [first name]!", taps a dish and confirms. The count drops at once (two people can never get the last plate). **One meal per person, no changes.** A pop-up shows her name, the dish and a 4-character **code**, and asks her to **take a screenshot** for the server.
+- **Servers check the screenshot** against the Sheet's **Meals** tab (name, phone, dish, code). The **Meal totals** tab shows each dish's quantity, chosen and remaining, for the kitchen. Both refresh every 5 minutes, or via **Wives Hangout → Sync meals now**.
+- **She can't find herself:** she can try the other one (phone or email). If neither works (e.g. she mistyped both at registration), a host serves her manually. The same goes for guests, ministers and volunteers who didn't register.
+
+**Reset one person's choice (builder)**, e.g. after a genuine mistake. It puts the plate back. In the Supabase SQL editor, using her phone number:
+```sql
+delete from public.meal_choices
+ where registration_id = (select id from public.registrations
+                           where event = 'wives-hangout-2026' and phone = '08012345678');
+```
+
+**Change a dish's quantity (builder)**, e.g. the kitchen made 5 more:
+```sql
+update public.menu_items
+   set quantity = quantity + 5, remaining = remaining + 5
+ where event = 'wives-hangout-2026' and item_id = 'fried-rice';
+```
+Dish ids: `ofada-rice-sauce`, `spaghetti-bolognese`, `poundo-yam-egusi`, `native-spaghetti`, `asun-rice`, `singaporean-noodles`, `ewa-agoyin-plantain`, `fried-rice`, `coconut-chicken-rice`, `native-jollof-rice`, `white-rice-ofada-sauce`, `jollof-rice-chicken`.
+
+**Close earlier or later (builder):** set `MENU_CLOSES_AT` in Vercel (Production), e.g. `2026-10-24T19:00:00+01:00`, then redeploy.

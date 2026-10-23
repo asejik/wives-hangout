@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { MealChoice, MenuItem, Who } from '../../shared/menu.js'
 import type { RegisterPayload, RegistrationDetails } from '../../shared/registration.js'
 
 // Server-only Supabase access with the secret key. RLS is on with no policies, so this key
@@ -53,4 +54,22 @@ export function setEmailStatus(id: string, status: EmailStatus, deferMinutes = 0
 
 export function emailRetryBatch(event: string, limit: number) {
   return rpc<RetryRow[]>('email_retry_batch', { p_event: event, p_limit: limit })
+}
+
+// Meal selection (migration 003).
+export type MenuLookupResult = { status: 'not_found' } | { status: 'found'; full_name: string; choice: MealChoice | null }
+export type ChooseMealResult =
+  | { status: 'not_found' | 'sold_out' | 'unknown_item' }
+  | { status: 'created' | 'already_chosen'; full_name: string; choice: MealChoice }
+
+export function menuStatus(event: string) {
+  return rpc<MenuItem[]>('menu_status', { p_event: event })
+}
+
+export function menuLookup(event: string, who: Who) {
+  return rpc<MenuLookupResult>('menu_lookup', { p_event: event, p_phone: who.phone, p_email: who.email })
+}
+
+export function chooseMeal(event: string, who: Who, item: string) {
+  return rpc<ChooseMealResult>('choose_meal', { p_event: event, p_phone: who.phone, p_email: who.email, p_item: item })
 }
