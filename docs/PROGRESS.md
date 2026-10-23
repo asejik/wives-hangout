@@ -167,3 +167,6 @@
 - `EVENT.menuClosesAt` → 2026-10-24T20:00+01:00 (was 18:00), with `menuClosesLabel` "Sat 24 Oct, 8:00 PM" shown on /menu; a test checks the label matches the enforced time (Lagos). Endpoint test moved to 19:59:59 open / 20:00 closed.
 - Menu QR centre now reads "WIVES HANGOUT MENU" (title lettering + Oswald "MENU"; source `docs/launch/menu-qr-centre.png`), so it differs from the registration QR. Same URL (/menu); decoded at 140–2520px + phone-photo copy.
 - Testing tip recorded: a test choice is reset in the database (delete from meal_choices), not the Sheet; the Sheet tab is rewritten every 5 minutes.
+
+## 2026-10-23 · Builder's test meal reset
+- At the builder's request, the test choice for one phone (Spaghetti bolognese, code Y2SD) was deleted from `meal_choices`; the trigger returned the plate (19 → 20). Registration kept. Production: 0 meals chosen, 215/215 plates.
