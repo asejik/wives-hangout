@@ -43,6 +43,7 @@ beforeEach(async () => {
   await db.exec(sql('005_pineapple_fried_rice.sql'))
   await db.exec(sql('006_seat.sql'))
   await db.exec(sql('007_seat_unique.sql'))
+  await db.exec(sql('008_adjust_menu_quantities.sql'))
 })
 
 describe('001_init: registrations', () => {
@@ -451,6 +452,34 @@ describe('007_seat_unique', () => {
   })
 })
 
+describe('008_adjust_menu_quantities', () => {
+  it('updates starting quantities: Spaghetti bolognese to 10, Ewa agoyin to 20; total plates remains 225', async () => {
+    const items = await rpc<{ item_id: string; quantity: number; remaining: number }>(
+      `select item_id, quantity, remaining from public.menu_items where event = $1 order by position`,
+      [EVENT]
+    )
+    const spag = items.find((i) => i.item_id === 'spaghetti-bolognese')!
+    const ewa = items.find((i) => i.item_id === 'ewa-agoyin-plantain')!
+    expect(spag).toMatchObject({ quantity: 10, remaining: 10 })
+    expect(ewa).toMatchObject({ quantity: 20, remaining: 20 })
+    expect(items.reduce((s, i) => s + i.quantity, 0)).toBe(225)
+    expect(items.reduce((s, i) => s + i.remaining, 0)).toBe(225)
+  })
+
+  it('rolls back to original quantities (Spaghetti 20, Ewa agoyin 10)', async () => {
+    await db.exec(sql('008_adjust_menu_quantities.down.sql'))
+    const items = await rpc<{ item_id: string; quantity: number; remaining: number }>(
+      `select item_id, quantity, remaining from public.menu_items where event = $1 and item_id in ('spaghetti-bolognese', 'ewa-agoyin-plantain')`,
+      [EVENT]
+    )
+    const spag = items.find((i) => i.item_id === 'spaghetti-bolognese')!
+    const ewa = items.find((i) => i.item_id === 'ewa-agoyin-plantain')!
+    expect(spag).toMatchObject({ quantity: 20, remaining: 20 })
+    expect(ewa).toMatchObject({ quantity: 10, remaining: 10 })
+    await db.exec(sql('008_adjust_menu_quantities.sql'))
+  })
+})
+
 describe('001_init: lockdown', () => {
   it('locks tables and functions away from anon/authenticated, with RLS on', async () => {
     const grants = await rpc(
@@ -487,6 +516,7 @@ describe('001_init: lockdown', () => {
   })
 
   it('rolls back cleanly', async () => {
+    await db.exec(sql('008_adjust_menu_quantities.down.sql'))
     await db.exec(sql('007_seat_unique.down.sql'))
     await db.exec(sql('006_seat.down.sql'))
     await db.exec(sql('005_pineapple_fried_rice.down.sql'))

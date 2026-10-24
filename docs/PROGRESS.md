@@ -226,3 +226,18 @@
   - Lint (`oxlint`): 0 warnings, 0 errors across 76 files with 116 rules.
   - Unit tests (`vitest`): 165/165 passed across 14 test files (including 4 new tests for 007 seat uniqueness, plate protection, cross-event isolation, and rollback).
   - Build (`npm run build`): Clean SSR pre-render and bundle build.
+
+## 2026-10-24 · Rebalance dish quantities (Migration 008)
+- **Builder request:** Reduce Spaghetti bolognese starting quantity from 20 to 10; increase Ewa agoyin and plantain starting quantity from 10 to 20.
+- **Migration `008_adjust_menu_quantities.sql` (+ down):**
+  - Live-safe and additive: `spaghetti-bolognese` quantity -10, remaining -10; `ewa-agoyin-plantain` quantity +10, remaining +10 across `wives-hangout-2026` and `wives-hangout-2026-dev`.
+  - Invariants maintained: total plates across all 13 dishes stays constant at 225.
+  - Existing choices preserved: 127 production choices completely untouched (Spaghetti bolognese: 4 chosen, remaining 16 -> 6; Ewa agoyin: 1 chosen, remaining 9 -> 19). Total remaining across all dishes: 98.
+- **Live Supabase Applied:** Both production and dev slugs updated and verified.
+- **Google Sheets:** `apps-script/Code.gs` reads live `menu_status` and regenerates the Meal totals snapshot automatically on sync.
+- **Checks:**
+  - Unit tests (`vitest`): 167/167 passed across 14 test files (including migration 008 quantity assertions and rollback).
+  - Typecheck (`tsc -b`): Clean.
+  - Lint (`oxlint`): 0 warnings, 0 errors.
+  - Build (`npm run build`): Clean.
+
