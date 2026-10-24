@@ -90,13 +90,20 @@ node --env-file=.env.local scripts/export-registrations.mjs --event wives-hangou
 
 - **Link:** https://wives-hangout.vercel.app/menu · **Table QR:** `docs/launch/wives-hangout-menu-qr.png` (centre reads "WIVES HANGOUT MENU", so it can't be confused with the registration QR)
 - **Open from the evening of 23 October until 8:00 PM on Saturday 24 October** (moved from 6 PM). After that the page says "Meal selection has closed".
-- **How it works:** she types the **phone number or email she registered with**, sees "Hi, [first name]!", taps a dish and confirms. The count drops at once (two people can never get the last plate). **One meal per person, no changes.** A pop-up shows her name, the dish and a 4-character **code**, and asks her to **take a screenshot** for the server.
-- **Servers check the screenshot** against the Sheet's **Meals** tab (name, phone, dish, code). The **Meal totals** tab shows each dish's quantity, chosen and remaining, for the kitchen. Both refresh every 5 minutes, or via **Wives Hangout → Sync meals now**.
+- **How it works:** she types the **phone number or email she registered with**, sees "Hi, [first name]!", **types her table number** (required), taps a dish and confirms. The count drops at once (two people can never get the last plate). **One meal per person, no changes**, but she can correct her **table number** if she moves. A pop-up shows her name, **table**, the dish and a 4-character **code**, and asks her to **take a screenshot** for the server.
+- **Servers check the screenshot** against the Sheet's **Meals** tab, which is **sorted by table** (table, name, dish, code, phone). People who chose before table numbers were added show a blank table until they add one on the page. The **Meal totals** tab shows each dish's quantity, chosen and remaining, for the kitchen. Both refresh every 5 minutes, or via **Wives Hangout → Sync meals now**.
 - **She can't find herself:** she can try the other one (phone or email). If neither works (e.g. she mistyped both at registration), a host serves her manually. The same goes for guests, ministers and volunteers who didn't register.
 
 **Reset one person's choice (builder)**, e.g. after a genuine mistake. It puts the plate back. In the Supabase SQL editor, using her phone number:
 ```sql
 delete from public.meal_choices
+ where registration_id = (select id from public.registrations
+                           where event = 'wives-hangout-2026' and phone = '08012345678');
+```
+
+**Set someone's table number for her (builder)**, e.g. she tells a host:
+```sql
+update public.meal_choices set table_no = '14'
  where registration_id = (select id from public.registrations
                            where event = 'wives-hangout-2026' and phone = '08012345678');
 ```

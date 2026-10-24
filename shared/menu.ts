@@ -22,4 +22,12 @@ export function parseWho(input: unknown): Who | null {
 export const WHO_HINT = 'Enter the phone number or email you registered with'
 
 export type MenuItem = { item_id: string; name: string; quantity: number; remaining: number }
-export type MealChoice = { item_id: string; item_name: string; code: string; chosen_at: string }
+/** '' for choices made before table numbers existed (migration 004). */
+export type MealChoice = { item_id: string; item_name: string; code: string; chosen_at: string; table_no: string }
+
+/** Table numbers are plain numbers: "1", "14" (builder, 2026-10-24). Must match the CHECK in 004_table.sql. */
+export function parseTable(input: unknown): string | null {
+  if (typeof input !== 'string' && typeof input !== 'number') return null
+  const v = String(input).trim()
+  return /^[1-9][0-9]{0,2}$/.test(v) ? v : null
+}

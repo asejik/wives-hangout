@@ -279,11 +279,12 @@ function log_(level, action, message) {
 
 /**
  * Meal selection (/menu, migration 003): rewrites two tabs from Supabase each run (a full snapshot,
- * ~200 rows): "Meals" (who chose what, with the code servers check on the screenshot) and
+ * ~200 rows): "Meals" (table, who, what, and the code servers check on the screenshot) and
  * "Meal totals" (per dish, for the kitchen). Runs on its own 5-minute trigger, so it can never
  * hold up the registrations sync. Returns the number of meals written.
  */
-var MEAL_HEADERS = ['chosen_at', 'full_name', 'phone', 'dish', 'code'];
+// table_no first (migration 004): sorted by table in SQL so servers can work table by table.
+var MEAL_HEADERS = ['table_no', 'full_name', 'dish', 'code', 'phone', 'chosen_at'];
 var TOTAL_HEADERS = ['dish', 'quantity', 'chosen', 'remaining'];
 
 function syncMeals() {

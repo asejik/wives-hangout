@@ -170,3 +170,10 @@
 
 ## 2026-10-23 · Builder's test meal reset
 - At the builder's request, the test choice for one phone (Spaghetti bolognese, code Y2SD) was deleted from `meal_choices`; the trigger returned the plate (19 → 20). Registration kept. Production: 0 meals chosen, 215/215 plates.
+
+## 2026-10-24 · Table number with each meal (FEATURE + DATABASE)
+- **Builder/management:** not every guest is known, so each meal carries her **table number** (plain numbers, "1", "14"); **required before choosing**; correctable later; guests who already chose are prompted to add it. Duplicates are normal (shared tables).
+- **Migration `004_table.sql`** (+ down), ADDITIVE and live-safe: `meal_choices.table_no` (default '', CHECK 1–999 or ''); a new 5-argument `choose_meal(…, p_table)` (the old 4-argument version still works, so the live page is unaffected until the push); `set_meal_table()`; `menu_choice_json` returns `table_no`; `meal_list` returns `table_no` first, **sorted by table number numerically, then name** (blank last). The 1 existing production choice keeps table ''. The down migration restores 003; `003_menu.down` also removes 004's functions.
+- **API:** `/api/menu-choose` requires `table` (400 `invalid_table`); new `POST /api/menu-table` (window + rate limit). **Page:** "Your table number" (number keypad) required before Choose (clear error, no dialog); confirm dialog shows the table; pass shows **TABLE 14** large; "Add your table number" / "Change table number" on the pass. **Sheet:** Meals tab columns `table_no, full_name, dish, code, phone, chosen_at`.
+- **Checks:** typecheck, lint clean; **159 unit tests** (6 new PGlite: saved with the choice, invalid tables take no plate, old 4-argument version still works, set/correct the table, sorting, lockdown/rollback; endpoint and `parseTable` tests); build OK; venue absent; 360px no sideways scroll.
+- **Deploy order:** (1) builder runs 004; (2) live browser + burst tests (dev slug); (3) builder re-pastes Code.gs; (4) push.

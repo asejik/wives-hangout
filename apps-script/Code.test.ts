@@ -231,8 +231,8 @@ describe('alerts and daily digest', () => {
 
 describe('syncMeals (Apps Script)', () => {
   const meals = [
-    { chosen_at: '2026-10-23 21:00:00', full_name: 'Funmi A', phone: '08012345678', dish: 'Fried rice', code: '2E45' },
-    { chosen_at: '2026-10-23 21:01:00', full_name: '=EVIL()', phone: '08099999999', dish: 'Asun rice', code: 'K7QX' },
+    { table_no: '3', full_name: 'Funmi A', dish: 'Fried rice', code: '2E45', phone: '08012345678', chosen_at: '2026-10-23 21:00:00' },
+    { table_no: '', full_name: '=EVIL()', dish: 'Asun rice', code: 'K7QX', phone: '08099999999', chosen_at: '2026-10-23 21:01:00' },
   ]
   const menu = [{ name: 'Fried rice', quantity: 10, remaining: 9 }, { name: 'Asun rice', quantity: 10, remaining: 9 }]
 
@@ -240,8 +240,9 @@ describe('syncMeals (Apps Script)', () => {
     const g = load({ meals, menu })
     expect(g.syncMeals()).toBe(2)
     const m = g.tabs.get('Meals')!
-    expect(m[0]).toEqual(['chosen_at', 'full_name', 'phone', 'dish', 'code'])
-    expect(m[1]).toEqual(['2026-10-23 21:00:00', 'Funmi A', '08012345678', 'Fried rice', '2E45'])
+    expect(m[0]).toEqual(['table_no', 'full_name', 'dish', 'code', 'phone', 'chosen_at'])
+    expect(m[1]).toEqual([3, 'Funmi A', 'Fried rice', '2E45', '08012345678', '2026-10-23 21:00:00'])
+    expect(m[2][0]).toBe('') // no table given yet
     expect(m[2][1]).toBe('=EVIL()') // stored as text, not a formula
     const totals = g.tabs.get('Meal totals')!
     expect(totals[1]).toEqual(['Fried rice', 10, 1, 9])

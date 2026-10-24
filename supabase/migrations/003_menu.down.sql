@@ -1,4 +1,7 @@
 -- Rollback for 003_menu · DESTRUCTIVE: drops the menu and every meal choice. Registrations are untouched.
+-- Also removes 004_table's functions if present (the whole menu feature goes).
+drop function if exists public.set_meal_table(text, text, text, text);
+drop function if exists public.choose_meal(text, text, text, text, text);
 drop function if exists public.meal_list(text);
 drop function if exists public.choose_meal(text, text, text, text);
 drop function if exists public.menu_lookup(text, text, text);

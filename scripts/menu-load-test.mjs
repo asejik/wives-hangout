@@ -42,7 +42,7 @@ console.log(`Registered: ${ok}/${n}`)
 
 await rest(`menu_items?event=eq.${DEV}&item_id=eq.${item}`, { method: 'PATCH', body: JSON.stringify({ remaining: stock }) })
 console.log(`Dev stock of ${item} set to ${stock}. ${n} people choose it at the same moment…`)
-const results = await Promise.all(phones.map((phone) => post('/api/menu-choose', { who: phone, item })))
+const results = await Promise.all(phones.map((phone, i) => post('/api/menu-choose', { who: phone, item, table: String(1 + (i % 20)) })))
 const by = results.reduce((m, r) => ((m[`${r.http} ${r.body.status}`] = (m[`${r.http} ${r.body.status}`] ?? 0) + 1), m), {})
 const ms = results.map((r) => r.ms).sort((a, b) => a - b)
 const [{ remaining }] = await (await rest(`menu_items?event=eq.${DEV}&item_id=eq.${item}&select=remaining`)).json()
@@ -52,7 +52,7 @@ console.log(`Latency ms: p50 ${pct(ms, 50)} · p95 ${pct(ms, 95)} · max ${ms.at
 
 // A second try by a winner must be refused without taking another plate.
 const winner = phones[results.findIndex((r) => r.body.status === 'created')]
-const again = await post('/api/menu-choose', { who: winner, item: 'fried-rice' })
+const again = await post('/api/menu-choose', { who: winner, item: 'fried-rice', table: '5' })
 console.log(`Winner tries again: ${again.body.status} (expect already_chosen)`)
 
 const pass = (by['200 created'] ?? 0) === Math.min(stock, ok) && (by['200 sold_out'] ?? 0) === ok - Math.min(stock, ok) &&

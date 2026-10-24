@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EVENT } from './event.js'
-import { parseWho } from './menu.js'
+import { parseTable, parseWho } from './menu.js'
 
 describe('parseWho', () => {
   it('reads a Nigerian phone number in any common format', () => {
@@ -20,5 +20,16 @@ describe('menu closing time', () => {
     const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Lagos', ...opts }).format(new Date(EVENT.menuClosesAt))
     expect(EVENT.menuClosesLabel).toContain(fmt({ hour: 'numeric', minute: '2-digit' })) // "8:00 PM"
     expect(EVENT.menuClosesLabel).toContain(`${fmt({ day: 'numeric' })} ${fmt({ month: 'short' })}`) // "24 Oct"
+  })
+})
+
+describe('parseTable', () => {
+  it('accepts plain table numbers 1–999', () => {
+    expect(parseTable('1')).toBe('1')
+    expect(parseTable(' 14 ')).toBe('14')
+    expect(parseTable(14)).toBe('14')
+  })
+  it('rejects anything else', () => {
+    for (const bad of ['', '0', '014', 'T3', 'Table 3', '1000', '1.5', null, undefined]) expect(parseTable(bad)).toBeNull()
   })
 })

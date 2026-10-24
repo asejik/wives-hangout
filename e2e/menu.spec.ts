@@ -36,7 +36,13 @@ test('choose a meal by phone: count drops, pass with code, no second choice; ema
   await page.getByLabel('Phone number or email you registered with').fill(phone)
   await page.getByRole('button', { name: 'Continue' }).click()
   await expect(page.getByText('Hi, E2E!')).toBeVisible()
+  // The table number is required before choosing.
   await row.getByRole('button', { name: 'Choose' }).click()
+  await expect(page.getByText('Enter your table number first', { exact: false })).toBeVisible()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.getByLabel('Your table number').fill('7')
+  await row.getByRole('button', { name: 'Choose' }).click()
+  await expect(page.getByRole('dialog', { name: 'Confirm your meal' })).toContainText('Table 7')
   await expect(page.getByRole('dialog', { name: 'Confirm your meal' })).toContainText("You can't change it after this.")
   await page.getByRole('button', { name: 'Yes, choose it' }).click()
 
@@ -44,10 +50,17 @@ test('choose a meal by phone: count drops, pass with code, no second choice; ema
   await expect(pass).toContainText('E2E Menu Tester')
   await expect(pass).toContainText('Jollof rice and chicken')
   await expect(pass).toContainText('Take a screenshot now')
+  await expect(pass).toContainText('Table7')
   await expect(pass.getByLabel(/^Code [2-9A-HJKMNP-Z]( [2-9A-HJKMNP-Z]){3}$/)).toBeVisible()
   await page.getByRole('button', { name: 'Done' }).click()
   await expect(row).toContainText('Your choice')
   await expect(page.getByRole('button', { name: 'Choose' })).toHaveCount(0) // one meal only
+
+  // Moved table: the table can be corrected, the meal can't.
+  await page.getByRole('button', { name: 'Change table number' }).click()
+  await page.getByLabel('Change your table number').fill('9')
+  await page.getByRole('button', { name: 'Save table number' }).click()
+  await expect(page.getByText('Table number saved: 9.')).toBeVisible()
 
   // Back by email in a fresh tab: she sees her pass, not the choose buttons.
   await page.evaluate(() => sessionStorage.clear())

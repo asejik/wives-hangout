@@ -13,6 +13,10 @@ export function MealPass({ fullName, choice }: { fullName: string; choice: MealC
       <div className="px-5 pb-5 pt-4">
         <Sparkle size={28} className="mx-auto animate-sparkle-in text-magenta" />
         <p className="mt-2 font-text text-body font-semibold text-ink [overflow-wrap:anywhere]">{fullName}</p>
+        <p className="mt-3 font-caps text-eyebrow font-semibold uppercase text-muted">Table</p>
+        <p className={`font-caps font-semibold ${choice.table_no ? 'text-h1 text-burgundy' : 'text-body text-error'}`}>
+          {choice.table_no || 'Not given yet'}
+        </p>
         <p className="mt-3 font-caps text-eyebrow font-semibold uppercase text-muted">Your meal</p>
         <p className="mt-1 font-display text-h2 font-semibold text-burgundy">{choice.item_name}</p>
         <p className="mt-4 font-caps text-eyebrow font-semibold uppercase text-muted">Code</p>
