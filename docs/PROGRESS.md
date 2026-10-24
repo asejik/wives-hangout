@@ -181,3 +181,6 @@
 ## 2026-10-24 · Table number LIVE; a test meal reset
 - Builder ran 004 and re-pasted Code.gs. Verified: `table_no` present, `set_meal_table` and the new `meal_list` respond. Burst test with tables: 10 created / 20 sold_out / remaining 0. Playwright menu journey (table required, shown on the pass, corrected 7 → 9) passed. Dev data cleaned.
 - At the builder's request, one registrant's test meal (Jollof rice and chicken, V3BG, chosen yesterday) was deleted from `meal_choices`; the plate returned (74 → 75); her registration kept. Production: 0 meals, 215/215.
+
+## 2026-10-24 · Builder's test meal reset (with table)
+- At the builder's request, the test choice for one phone (Fried rice, 8F3T, table 12) was deleted from `meal_choices`; the plate returned (9 → 10); registration kept. Production: 0 meals, 215/215.
