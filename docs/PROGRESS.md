@@ -177,3 +177,7 @@
 - **API:** `/api/menu-choose` requires `table` (400 `invalid_table`); new `POST /api/menu-table` (window + rate limit). **Page:** "Your table number" (number keypad) required before Choose (clear error, no dialog); confirm dialog shows the table; pass shows **TABLE 14** large; "Add your table number" / "Change table number" on the pass. **Sheet:** Meals tab columns `table_no, full_name, dish, code, phone, chosen_at`.
 - **Checks:** typecheck, lint clean; **159 unit tests** (6 new PGlite: saved with the choice, invalid tables take no plate, old 4-argument version still works, set/correct the table, sorting, lockdown/rollback; endpoint and `parseTable` tests); build OK; venue absent; 360px no sideways scroll.
 - **Deploy order:** (1) builder runs 004; (2) live browser + burst tests (dev slug); (3) builder re-pastes Code.gs; (4) push.
+
+## 2026-10-24 · Table number LIVE; a test meal reset
+- Builder ran 004 and re-pasted Code.gs. Verified: `table_no` present, `set_meal_table` and the new `meal_list` respond. Burst test with tables: 10 created / 20 sold_out / remaining 0. Playwright menu journey (table required, shown on the pass, corrected 7 → 9) passed. Dev data cleaned.
+- At the builder's request, one registrant's test meal (Jollof rice and chicken, V3BG, chosen yesterday) was deleted from `meal_choices`; the plate returned (74 → 75); her registration kept. Production: 0 meals, 215/215.
