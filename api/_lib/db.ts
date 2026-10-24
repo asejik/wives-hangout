@@ -59,7 +59,7 @@ export function emailRetryBatch(event: string, limit: number) {
 // Meal selection (migration 003).
 export type MenuLookupResult = { status: 'not_found' } | { status: 'found'; full_name: string; choice: MealChoice | null }
 export type ChooseMealResult =
-  | { status: 'not_found' | 'sold_out' | 'unknown_item' }
+  | { status: 'not_found' | 'sold_out' | 'unknown_item' | 'invalid_seat' }
   | { status: 'created' | 'already_chosen'; full_name: string; choice: MealChoice }
 
 export function menuStatus(event: string) {
@@ -70,7 +70,15 @@ export function menuLookup(event: string, who: Who) {
   return rpc<MenuLookupResult>('menu_lookup', { p_event: event, p_phone: who.phone, p_email: who.email })
 }
 
-// The 4-argument choose_meal (migration 003). The table step (004) was withdrawn on 2026-10-24.
-export function chooseMeal(event: string, who: Who, item: string) {
-  return rpc<ChooseMealResult>('choose_meal', { p_event: event, p_phone: who.phone, p_email: who.email, p_item: item })
+export function chooseMeal(event: string, who: Who, item: string, seat: string) {
+  return rpc<ChooseMealResult>('choose_meal', { p_event: event, p_phone: who.phone, p_email: who.email, p_item: item, p_seat: seat })
+}
+
+export type SetSeatResult =
+  | { status: 'not_found' | 'no_choice' | 'invalid_seat' }
+  | { status: 'updated'; full_name: string; choice: MealChoice }
+
+/** Add or correct the seat number on her existing choice (migration 006). */
+export function setMealSeat(event: string, who: Who, seat: string) {
+  return rpc<SetSeatResult>('set_meal_seat', { p_event: event, p_phone: who.phone, p_email: who.email, p_seat: seat })
 }

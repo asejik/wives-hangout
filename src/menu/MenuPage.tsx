@@ -1,7 +1,7 @@
 import { CircleAlert, UtensilsCrossed } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { EVENT } from '../../shared/event'
-import { parseWho, WHO_HINT, type MealChoice, type MenuItem } from '../../shared/menu'
+import { parseSeat, parseWho, WHO_HINT, type MealChoice, type MenuItem } from '../../shared/menu'
 import { Button } from '../components/Button'
 import { CompactHero } from '../components/Hero'
 import { Sparkle } from '../components/Sparkle'
@@ -39,6 +39,47 @@ export function MenuPage() {
   const [choosing, setChoosing] = useState(false)
   const [notice, setNotice] = useState('')
   const [pass, setPass] = useState<{ fullName: string; choice: MealChoice } | null>(null)
+  const [seat, setSeat] = useState('')
+  const [seatError, setSeatError] = useState('')
+  const [editingSeat, setEditingSeat] = useState(false)
+  const [savingSeat, setSavingSeat] = useState(false)
+
+  // Before choosing, the seat number is required (e.g. 27 or B12).
+  const startChoosing = (item: MenuItem) => {
+    if (!parseSeat(seat)) {
+      setSeatError('Enter your seat number first (e.g. 27 or B12).')
+      document.getElementById('seat')?.focus()
+      return
+    }
+    setSeatError('')
+    setPending(item)
+  }
+
+  // Add or correct the seat on an existing choice (the meal itself never changes).
+  const saveSeat = async () => {
+    if (!me) return
+    const t = parseSeat(seat)
+    if (!t) return setSeatError('Enter your seat number (e.g. 27 or B12).')
+    setSeatError('')
+    setSavingSeat(true)
+    try {
+      const { http, body } = await post('/api/menu-seat', { who: me.who, seat: t })
+      if (body.status === 'updated') {
+        setMe({ ...me, fullName: body.full_name, choice: body.choice })
+        setEditingSeat(false)
+        setNotice(`Seat number saved: ${t}.`)
+      } else if (http === 403) {
+        setSeatError('Meal selection has closed. Please tell a host your seat number.')
+      } else {
+        setSeatError(http === 429 ? 'Too many tries from this network. Please wait a few minutes.' : "We couldn't save it. Please try again.")
+      }
+    } catch {
+      setSeatError('No connection. Please try again.')
+    } finally {
+      setSavingSeat(false)
+    }
+  }
+
   // Live counts: poll while the page is visible (keeps the last counts if a poll fails).
   useEffect(() => {
     const load = () =>
@@ -94,12 +135,14 @@ export function MenuPage() {
     setChoosing(true)
     setNotice('')
     try {
-      const { http, body } = await post('/api/menu-choose', { who: me.who, item: pending.item_id })
+      const { http, body } = await post('/api/menu-choose', { who: me.who, item: pending.item_id, seat: parseSeat(seat) })
       if (Array.isArray(body.items)) setItems(body.items)
       if (body.status === 'created' || body.status === 'already_chosen') {
         setMe({ ...me, fullName: body.full_name, choice: body.choice })
         setPass({ fullName: body.full_name, choice: body.choice })
         if (body.status === 'already_chosen') setNotice('You had already chosen your meal. Here it is.')
+      } else if (body.status === 'invalid_seat') {
+        setSeatError('Enter your seat number first (e.g. 27 or B12).')
       } else if (body.status === 'sold_out') {
         setNotice(`Sorry, ${pending.name} just finished. Please choose another dish.`)
       } else if (http === 403) {
@@ -149,10 +192,37 @@ export function MenuPage() {
               {me.choice ? (
                 <div className="mt-4">
                   <MealPass fullName={me.fullName} choice={me.choice} />
+                  {state === 'open' && (me.choice.seat_no === '' || editingSeat ? (
+                    <SeatField
+                      label={me.choice.seat_no ? 'Change your seat number' : 'Add your seat number'}
+                      value={seat}
+                      error={seatError}
+                      onChange={setSeat}
+                      action={
+                        <Button type="button" loading={savingSeat} className="mt-3 w-full" onClick={() => void saveSeat()}>
+                          {savingSeat ? 'Saving…' : 'Save seat number'}
+                        </Button>
+                      }
+                    />
+                  ) : (
+                    <p className="mt-3 text-center font-text text-small text-muted">
+                      Changed seats?{' '}
+                      <button
+                        type="button"
+                        className="min-h-11 font-semibold text-magenta-700 underline underline-offset-2"
+                        onClick={() => { setSeat(me.choice?.seat_no ?? ''); setEditingSeat(true) }}
+                      >
+                        Change seat number
+                      </button>
+                    </p>
+                  ))}
                 </div>
-              ) : (
-                <p className="mt-2 font-text text-body text-ink">{state === 'open' ? 'Now tap the dish you want below.' : ''}</p>
-              )}
+              ) : state === 'open' ? (
+                <>
+                  <SeatField label="Your seat number" value={seat} error={seatError} onChange={setSeat} />
+                  <p className="mt-3 font-text text-body text-ink">Then tap the dish you want below.</p>
+                </>
+              ) : null}
             </div>
           ) : (
             <form noValidate onSubmit={(e) => { e.preventDefault(); void find(whoInput) }}>
@@ -208,7 +278,7 @@ export function MenuPage() {
                   {canChoose && !finished && (
                     <button
                       type="button"
-                      onClick={() => setPending(item)}
+                      onClick={() => startChoosing(item)}
                       className="min-h-11 shrink-0 rounded-pill bg-burgundy px-5 font-caps text-button font-semibold uppercase text-white transition-colors duration-[var(--dur-fast)] hover:bg-wine focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-magenta"
                     >
                       Choose
@@ -229,6 +299,7 @@ export function MenuPage() {
           <div className="px-5 py-6 text-center">
             <p className="font-text text-body text-ink">Choose this meal?</p>
             <p className="mt-2 font-display text-h2 font-semibold text-burgundy">{pending.name}</p>
+            <p className="mt-1 font-text text-body font-semibold text-ink">Seat {parseSeat(seat)}</p>
             <p className="mt-2 font-text text-small text-muted">You can't change it after this.</p>
             <div className="mt-5 grid gap-2.5">
               <Button data-autofocus loading={choosing} onClick={() => void confirm()}>
@@ -257,6 +328,39 @@ export function MenuPage() {
         {EVENT.host} · {EVENT.name}
       </footer>
     </main>
+  )
+}
+
+function SeatField({ label, value, error, onChange, action }: {
+  label: string; value: string; error: string; onChange: (v: string) => void; action?: React.ReactNode
+}) {
+  return (
+    <div className="mt-4">
+      <label htmlFor="seat" className={labelClass}>{label}</label>
+      <input
+        id="seat"
+        value={value}
+        onChange={(e) => onChange(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+        autoCapitalize="characters"
+        autoCorrect="off"
+        spellCheck={false}
+        maxLength={6}
+        autoComplete="off"
+        placeholder="e.g. 27"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? 'seat-error' : 'seat-hint'}
+        className={controlClass(!!error)}
+      />
+      {error ? (
+        <p id="seat-error" role="alert" className="mt-2 flex items-start gap-1.5 font-text text-small font-semibold text-error">
+          <CircleAlert aria-hidden size={16} strokeWidth={2.5} className="mt-0.5 shrink-0" />
+          {error}
+        </p>
+      ) : (
+        <p id="seat-hint" className="mt-2 font-text text-small text-muted">The number on your seat, so the servers can find you.</p>
+      )}
+      {action}
+    </div>
   )
 }
 

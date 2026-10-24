@@ -34,13 +34,14 @@ beforeAll(async () => {
 beforeEach(async () => {
   // Fresh schema per test: roll back, then migrate (also proves the pair round-trips).
   await db.exec(sql('005_pineapple_fried_rice.down.sql'))
-  await db.exec(sql('003_menu.down.sql')) // also removes 004's functions
+  await db.exec(sql('003_menu.down.sql')) // also removes 004's and 006's functions
   await db.exec(sql('001_init.down.sql'))
   await db.exec(sql('001_init.sql'))
   await db.exec(sql('002_occupation.sql'))
   await db.exec(sql('003_menu.sql'))
   await db.exec(sql('004_table.sql'))
   await db.exec(sql('005_pineapple_fried_rice.sql'))
+  await db.exec(sql('006_seat.sql'))
 })
 
 describe('001_init: registrations', () => {
@@ -316,6 +317,7 @@ describe('003_menu', () => {
     const rls = await rpc<{ relrowsecurity: boolean }>(`select relrowsecurity from pg_class where relname in ('menu_items', 'meal_choices')`)
     expect(rls.every((r) => r.relrowsecurity)).toBe(true)
     await register(person('08012345678', 'funmi@example.com'))
+    await db.exec(sql('006_seat.down.sql'))
     await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('004_table.down.sql'))
     await db.exec(sql('003_menu.down.sql'))
@@ -324,65 +326,78 @@ describe('003_menu', () => {
   })
 })
 
-describe('004_table', () => {
-  const choose5 = async (phone: string, item: string, table: string) =>
-    (await rpc<{ r: Record<string, any> }>('select public.choose_meal($1, $2, $3, $4, $5) as r', [EVENT, phone, '', item, table]))[0].r
-  const setTable = async (who: { phone?: string; email?: string }, table: string) =>
-    (await rpc<{ r: Record<string, any> }>('select public.set_meal_table($1, $2, $3, $4) as r', [EVENT, who.phone ?? '', who.email ?? '', table]))[0].r
+describe('006_seat (on top of 004_table)', () => {
+  const choose5 = async (phone: string, item: string, seat: string) =>
+    (await rpc<{ r: Record<string, any> }>('select public.choose_meal($1, $2, $3, $4, $5) as r', [EVENT, phone, '', item, seat]))[0].r
+  const setSeat = async (who: { phone?: string; email?: string }, seat: string) =>
+    (await rpc<{ r: Record<string, any> }>('select public.set_meal_seat($1, $2, $3, $4) as r', [EVENT, who.phone ?? '', who.email ?? '', seat]))[0].r
+  const remaining = async (item: string) =>
+    (await rpc<{ remaining: number }>(`select remaining from public.menu_items where event = $1 and item_id = $2`, [EVENT, item]))[0].remaining
 
-  it('saves the table number with the choice and shows it on the pass', async () => {
+  it('saves the seat with the choice and shows it on the pass', async () => {
     await register(person('08012345678', 'funmi@example.com'))
-    const r = await choose5('08012345678', 'fried-rice', '14')
-    expect(r).toMatchObject({ status: 'created', choice: { item_name: 'Fried rice', table_no: '14' } })
+    const r = await choose5('08012345678', 'fried-rice', 'B12')
+    expect(r).toMatchObject({ status: 'created', choice: { item_name: 'Fried rice', seat_no: 'B12' } })
+    expect(r.choice).not.toHaveProperty('table_no')
   })
 
-  it('requires a plain table number (1–999) and takes no plate otherwise', async () => {
+  it('requires a seat label with a digit (upper case, up to 6) and takes no plate otherwise', async () => {
     await register(person('08012345678', 'funmi@example.com'))
-    for (const bad of ['', '0', '014', 'T3', '1000', '3 ']) {
-      expect(await choose5('08012345678', 'fried-rice', bad), bad).toEqual({ status: 'invalid_table' })
+    for (const bad of ['', 'VIP', 'b12', 'B 12', '1234567', '#3']) {
+      expect(await choose5('08012345678', 'fried-rice', bad), bad).toEqual({ status: 'invalid_seat' })
     }
-    const [{ remaining }] = await rpc<{ remaining: number }>(`select remaining from public.menu_items where event = $1 and item_id = 'fried-rice'`, [EVENT])
-    expect(remaining).toBe(10)
+    expect((await rpc<{ r: unknown }>('select public.choose_meal($1, $2, $3, $4, null) as r', [EVENT, '08012345678', '', 'fried-rice']))[0].r)
+      .toEqual({ status: 'invalid_seat' })
+    expect(await remaining('fried-rice')).toBe(10)
   })
 
-  it('is live-safe: the old 4-argument choose_meal still works (table left empty) and the table can be added later', async () => {
+  it('is live-safe: the old 4-argument choose_meal still works (seat left empty) and the seat can be added later', async () => {
     await register(person('08012345678', 'funmi@example.com'))
     const old = (await rpc<{ r: Record<string, any> }>('select public.choose_meal($1, $2, $3, $4) as r', [EVENT, '08012345678', '', 'asun-rice']))[0].r
-    expect(old).toMatchObject({ status: 'created', choice: { table_no: '' } })
-    expect(await setTable({ email: 'FUNMI@example.com' }, '7')).toMatchObject({ status: 'updated', choice: { table_no: '7', item_name: 'Asun rice' } })
-    expect(await setTable({ phone: '08012345678' }, '12')).toMatchObject({ status: 'updated', choice: { table_no: '12', item_name: 'Asun rice' } })
+    expect(old).toMatchObject({ status: 'created', choice: { seat_no: '' } })
+    expect(await setSeat({ email: 'FUNMI@example.com' }, '7')).toMatchObject({ status: 'updated', choice: { seat_no: '7', item_name: 'Asun rice' } })
+    expect(await setSeat({ phone: '08012345678' }, '12A')).toMatchObject({ status: 'updated', choice: { seat_no: '12A', item_name: 'Asun rice' } })
+    expect(await remaining('asun-rice')).toBe(9) // correcting the seat never takes another plate
   })
 
-  it('setting a table needs an existing choice, a known person and a valid number', async () => {
+  it('setting a seat needs an existing choice, a known person and a valid seat', async () => {
     await register(person('08012345678', 'funmi@example.com'))
-    expect(await setTable({ phone: '08012345678' }, '3')).toEqual({ status: 'no_choice' })
-    expect(await setTable({ phone: '09099999999' }, '3')).toEqual({ status: 'not_found' })
-    expect(await setTable({ phone: '08012345678' }, 'x')).toEqual({ status: 'invalid_table' })
+    expect(await setSeat({ phone: '08012345678' }, '3')).toEqual({ status: 'no_choice' })
+    expect(await setSeat({ phone: '09099999999' }, '3')).toEqual({ status: 'not_found' })
+    expect(await setSeat({ phone: '08012345678' }, 'x')).toEqual({ status: 'invalid_seat' })
   })
 
-  it('lists meals for the Sheet sorted by table (numerically), then name; no table last', async () => {
-    await register(person('08011111111', 'a@example.com', { full_name: 'Bisi B' }))
-    await register(person('08022222222', 'b@example.com', { full_name: 'Ada A' }))
-    await register(person('08033333333', 'c@example.com', { full_name: 'Cee C' }))
-    await register(person('08044444444', 'd@example.com', { full_name: 'Dee D' }))
-    await choose5('08011111111', 'fried-rice', '10')
-    await choose5('08022222222', 'fried-rice', '2')
-    await choose5('08033333333', 'asun-rice', '10')
-    await rpc('select public.choose_meal($1, $2, $3, $4)', [EVENT, '08044444444', '', 'asun-rice'])
-    const rows = await rpc<{ table_no: string; full_name: string }>(`select table_no, full_name from public.meal_list($1)`, [EVENT])
-    expect(rows.map((r) => `${r.table_no}:${r.full_name}`)).toEqual(['2:Ada A', '10:Bisi B', '10:Cee C', ':Dee D'])
+  it('lists meals for the Sheet sorted by seat (numbers in order), then name; no seat last', async () => {
+    const names = ['Bisi B', 'Ada A', 'Cee C', 'Dee D', 'Eve E']
+    for (const [i, full_name] of names.entries()) await register(person(`0801111111${i}`, `${i}@example.com`, { full_name }))
+    await choose5('08011111110', 'fried-rice', '10')
+    await choose5('08011111111', 'fried-rice', '2')
+    await choose5('08011111112', 'asun-rice', '10')
+    await choose5('08011111114', 'asun-rice', 'B3')
+    await rpc('select public.choose_meal($1, $2, $3, $4)', [EVENT, '08011111113', '', 'asun-rice'])
+    const rows = await rpc<{ seat_no: string; full_name: string }>(`select seat_no, full_name from public.meal_list($1)`, [EVENT])
+    expect(rows.map((r) => `${r.seat_no}:${r.full_name}`)).toEqual(['2:Ada A', '10:Bisi B', '10:Cee C', 'B3:Eve E', ':Dee D'])
   })
 
-  it('is locked down and rolls back to 003 (choices kept)', async () => {
-    for (const fn of ['public.choose_meal(text, text, text, text, text)', 'public.set_meal_table(text, text, text, text)', 'public.meal_list(text)']) {
+  it('is locked down', async () => {
+    for (const fn of ['public.choose_meal(text, text, text, text, text)', 'public.set_meal_seat(text, text, text, text)', 'public.meal_list(text)', 'public.valid_seat(text)', 'public.menu_choice_json(uuid)']) {
       expect(await anonCanExecute(fn), fn).toBe(false)
     }
+    expect(await rpc(`select 1 from pg_proc where proname = 'set_meal_table'`)).toHaveLength(0)
+  })
+
+  it('rolls back to 004 (choices kept, seats cleared), and forward again', async () => {
     await register(person('08012345678', 'funmi@example.com'))
-    await choose5('08012345678', 'fried-rice', '5')
-    await db.exec(sql('004_table.down.sql'))
-    expect(await rpc(`select 1 from information_schema.columns where table_name = 'meal_choices' and column_name = 'table_no'`)).toHaveLength(0)
+    await choose5('08012345678', 'fried-rice', 'B5')
+    await db.exec(sql('006_seat.down.sql'))
+    await db.exec(sql('004_table.sql'))
+    expect(await rpc(`select 1 from information_schema.columns where table_name = 'meal_choices' and column_name = 'seat_no'`)).toHaveLength(0)
+    const [row] = await rpc<{ table_no: string }>(`select * from public.meal_list($1)`, [EVENT])
+    expect(row).toMatchObject({ table_no: '', full_name: 'Funmilayo Adeyemi' })
+    expect((await rpc<{ r: Record<string, any> }>('select public.choose_meal($1, $2, $3, $4, $5) as r', [EVENT, '08012345678', '', 'fried-rice', '3']))[0].r)
+      .toMatchObject({ status: 'already_chosen', choice: { table_no: '' } })
+    await db.exec(sql('006_seat.sql'))
     expect(await rpc(`select * from public.meal_list($1)`, [EVENT])).toHaveLength(1)
-    await db.exec(sql('004_table.sql')) // and forward again
   })
 })
 
@@ -416,11 +431,13 @@ describe('001_init: lockdown', () => {
     await db.exec(sql('003_menu.sql'))
     await db.exec(sql('004_table.sql'))
     await db.exec(sql('005_pineapple_fried_rice.sql'))
+    await db.exec(sql('006_seat.sql'))
     expect(await anonCanExecute('public.rls_auto_enable()')).toBe(false)
     await db.exec('drop function public.rls_auto_enable()')
   })
 
   it('rolls back cleanly', async () => {
+    await db.exec(sql('006_seat.down.sql'))
     await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('004_table.down.sql'))
     await db.exec(sql('003_menu.down.sql'))

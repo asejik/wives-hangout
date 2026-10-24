@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const menuStatus = vi.fn()
 const menuLookup = vi.fn()
 const chooseMeal = vi.fn()
+const setMealSeat = vi.fn()
 const rateLimitHit = vi.fn()
-vi.mock('./_lib/db.js', () => ({ menuStatus, menuLookup, chooseMeal, rateLimitHit }))
+vi.mock('./_lib/db.js', () => ({ menuStatus, menuLookup, chooseMeal, setMealSeat, rateLimitHit }))
 
 const { default: menu } = await import('./menu.js')
 const { default: lookup } = await import('./menu-lookup.js')
 const { default: choose } = await import('./menu-choose.js')
+const { default: seat } = await import('./menu-seat.js')
 
 type Handler = (req: ApiRequest, res: ApiResponse) => unknown
 async function call(handler: Handler, method: string, body?: unknown) {
@@ -24,7 +26,7 @@ async function call(handler: Handler, method: string, body?: unknown) {
 }
 
 const items = [{ item_id: 'fried-rice', name: 'Fried rice', quantity: 10, remaining: 9 }]
-const choice = { item_id: 'fried-rice', item_name: 'Fried rice', code: 'K7QX', chosen_at: 'Fri 23 Oct, 09:15 PM', table_no: '' }
+const choice = { item_id: 'fried-rice', item_name: 'Fried rice', code: 'K7QX', chosen_at: 'Fri 23 Oct, 09:15 PM', seat_no: '14' }
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -83,31 +85,49 @@ describe('POST /api/menu-lookup', () => {
 describe('POST /api/menu-choose', () => {
   it('chooses, and returns her choice with fresh counts', async () => {
     chooseMeal.mockResolvedValue({ status: 'created', full_name: 'Funmilayo Adeyemi', choice })
-    const res = await call(choose, 'POST', { who: '08012345678', item: 'fried-rice' })
+    const res = await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: '14' })
     expect(res).toMatchObject({ statusCode: 200, body: { status: 'created', choice, items } })
-    expect(chooseMeal).toHaveBeenCalledWith('wives-hangout-2026-dev', { phone: '08012345678', email: '' }, 'fried-rice')
+    expect(chooseMeal).toHaveBeenCalledWith('wives-hangout-2026-dev', { phone: '08012345678', email: '' }, 'fried-rice', '14')
   })
   it('passes through sold out and already chosen', async () => {
     chooseMeal.mockResolvedValue({ status: 'sold_out' })
-    expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice' })).body).toMatchObject({ status: 'sold_out', items })
+    expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: '14' })).body).toMatchObject({ status: 'sold_out', items })
     chooseMeal.mockResolvedValue({ status: 'already_chosen', full_name: 'F A', choice })
-    expect((await call(choose, 'POST', { who: '08012345678', item: 'asun-rice' })).body).toMatchObject({ status: 'already_chosen', choice })
+    expect((await call(choose, 'POST', { who: '08012345678', item: 'asun-rice', seat: '14' })).body).toMatchObject({ status: 'already_chosen', choice })
   })
   it('refuses outside the window (403) and bad input (400), without touching the database', async () => {
     process.env.MENU_CLOSES_AT = '2020-01-01T00:00:00+01:00'
-    expect(await call(choose, 'POST', { who: '08012345678', item: 'fried-rice' })).toMatchObject({ statusCode: 403, body: { status: 'closed' } })
+    expect(await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: '14' })).toMatchObject({ statusCode: 403, body: { status: 'closed' } })
     process.env.MENU_CLOSES_AT = '2999-01-01T00:00:00+01:00'
-    expect((await call(choose, 'POST', { who: '08012345678', item: 'Fried Rice; drop table' })).statusCode).toBe(400)
-    expect((await call(choose, 'POST', { who: 'nobody', item: 'fried-rice' })).statusCode).toBe(400)
+    expect((await call(choose, 'POST', { who: '08012345678', item: 'Fried Rice; drop table', seat: '14' })).statusCode).toBe(400)
+    expect((await call(choose, 'POST', { who: 'nobody', item: 'fried-rice', seat: '14' })).statusCode).toBe(400)
     expect(chooseMeal).not.toHaveBeenCalled()
   })
-  it('no longer needs a table number (the table step was withdrawn)', async () => {
-    chooseMeal.mockResolvedValue({ status: 'created', full_name: 'F A', choice })
-    expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice' })).statusCode).toBe(200)
+  it('requires a seat number (e.g. 27 or B12), without touching the database', async () => {
+    for (const bad of [undefined, '', 'VIP', 'Seat 1234', '#3']) {
+      expect(await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: bad }), String(bad)).toMatchObject({ statusCode: 400, body: { status: 'invalid_seat' } })
+    }
+    expect(chooseMeal).not.toHaveBeenCalled()
   })
 
   it('returns 502 when the database fails', async () => {
     chooseMeal.mockRejectedValue(new Error('choose_meal: timeout'))
-    expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice' })).statusCode).toBe(502)
+    expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: '14' })).statusCode).toBe(502)
+  })
+})
+
+describe('POST /api/menu-seat', () => {
+  it('adds or corrects the seat on her existing choice', async () => {
+    setMealSeat.mockResolvedValue({ status: 'updated', full_name: 'F A', choice: { ...choice, seat_no: '9' } })
+    const res = await call(seat, 'POST', { who: 'funmi@example.com', seat: ' b-9 ' })
+    expect(res).toMatchObject({ statusCode: 200, body: { status: 'updated', choice: { seat_no: '9' } } })
+    expect(setMealSeat).toHaveBeenCalledWith('wives-hangout-2026-dev', { phone: '', email: 'funmi@example.com' }, 'B9')
+  })
+  it('passes through no_choice / not_found, and rejects a bad seat or a closed window', async () => {
+    setMealSeat.mockResolvedValue({ status: 'no_choice' })
+    expect((await call(seat, 'POST', { who: '08012345678', seat: '3' })).body).toEqual({ status: 'no_choice' })
+    expect((await call(seat, 'POST', { who: '08012345678', seat: 'VIP' })).statusCode).toBe(400)
+    process.env.MENU_CLOSES_AT = '2020-01-01T00:00:00+01:00'
+    expect((await call(seat, 'POST', { who: '08012345678', seat: '3' })).statusCode).toBe(403)
   })
 })
