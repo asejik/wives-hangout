@@ -107,6 +107,6 @@ update public.menu_items
    set quantity = quantity + 5, remaining = remaining + 5
  where event = 'wives-hangout-2026' and item_id = 'fried-rice';
 ```
-Dish ids: `ofada-rice-sauce`, `spaghetti-bolognese`, `poundo-yam-egusi`, `native-spaghetti`, `asun-rice`, `singaporean-noodles`, `ewa-agoyin-plantain`, `fried-rice`, `coconut-chicken-rice`, `native-jollof-rice`, `white-rice-ofada-sauce`, `jollof-rice-chicken`.
+Dish ids: `ofada-rice-sauce`, `spaghetti-bolognese`, `poundo-yam-egusi`, `native-spaghetti`, `asun-rice`, `singaporean-noodles`, `ewa-agoyin-plantain`, `fried-rice`, `coconut-chicken-rice`, `native-jollof-rice`, `white-rice-ofada-sauce`, `jollof-rice-chicken`, `pineapple-fried-rice`.
 
 **Close earlier or later (builder):** set `MENU_CLOSES_AT` in Vercel (Production), e.g. `2026-10-24T19:00:00+01:00`, then redeploy.

@@ -33,12 +33,14 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // Fresh schema per test: roll back, then migrate (also proves the pair round-trips).
+  await db.exec(sql('005_pineapple_fried_rice.down.sql'))
   await db.exec(sql('003_menu.down.sql')) // also removes 004's functions
   await db.exec(sql('001_init.down.sql'))
   await db.exec(sql('001_init.sql'))
   await db.exec(sql('002_occupation.sql'))
   await db.exec(sql('003_menu.sql'))
   await db.exec(sql('004_table.sql'))
+  await db.exec(sql('005_pineapple_fried_rice.sql'))
 })
 
 describe('001_init: registrations', () => {
@@ -229,13 +231,21 @@ describe('003_menu', () => {
   const remaining = async (item: string, event = EVENT) =>
     (await rpc<{ remaining: number }>('select remaining from public.menu_items where event = $1 and item_id = $2', [event, item]))[0].remaining
 
-  it('seeds the 12 dishes (215 plates) for production and dev, in the listed order', async () => {
+  it('seeds the 13 dishes (225 plates) for production and dev, in the listed order', async () => {
     const menu = await rpc<{ item_id: string; quantity: number; remaining: number }>(`select * from public.menu_status($1)`, [EVENT])
-    expect(menu).toHaveLength(12)
+    expect(menu).toHaveLength(13)
     expect(menu[0].item_id).toBe('ofada-rice-sauce')
-    expect(menu.at(-1)).toMatchObject({ item_id: 'jollof-rice-chicken', quantity: 75, remaining: 75 })
-    expect(menu.reduce((n, m) => n + m.quantity, 0)).toBe(215)
-    expect(await rpc(`select * from public.menu_status($1)`, [DEV])).toHaveLength(12)
+    expect(menu.at(-1)).toMatchObject({ item_id: 'pineapple-fried-rice', quantity: 10, remaining: 10 })
+    expect(menu.reduce((n, m) => n + m.quantity, 0)).toBe(225)
+    expect(await rpc(`select * from public.menu_status($1)`, [DEV])).toHaveLength(13)
+  })
+
+  it('allows choosing the additional Pineapple Fried Rice dish', async () => {
+    await register(person('08012345678', 'funmi@example.com'))
+    const r = await choose('08012345678', 'pineapple-fried-rice')
+    expect(r).toMatchObject({ status: 'created', full_name: 'Funmilayo Adeyemi', choice: { item_id: 'pineapple-fried-rice', item_name: 'Pineapple Fried Rice' } })
+    expect(r.choice.code).toMatch(/^[2-9A-HJKMNP-Z]{4}$/)
+    expect(await remaining('pineapple-fried-rice')).toBe(9)
   })
 
   it('finds a registrant by phone or by email (case-insensitive), revealing only her name', async () => {
@@ -306,6 +316,7 @@ describe('003_menu', () => {
     const rls = await rpc<{ relrowsecurity: boolean }>(`select relrowsecurity from pg_class where relname in ('menu_items', 'meal_choices')`)
     expect(rls.every((r) => r.relrowsecurity)).toBe(true)
     await register(person('08012345678', 'funmi@example.com'))
+    await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('004_table.down.sql'))
     await db.exec(sql('003_menu.down.sql'))
     expect(await rpc(`select 1 from pg_tables where tablename in ('menu_items', 'meal_choices')`)).toHaveLength(0)
@@ -397,17 +408,20 @@ describe('001_init: lockdown', () => {
   it("revokes public EXECUTE on Supabase's rls_auto_enable helper when present (idempotent)", async () => {
     await db.exec(`create function public.rls_auto_enable() returns void language sql security definer as 'select'`)
     await db.exec(`grant execute on function public.rls_auto_enable() to anon, authenticated`)
+    await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('003_menu.down.sql'))
     await db.exec(sql('001_init.down.sql'))
     await db.exec(sql('001_init.sql'))
     await db.exec(sql('002_occupation.sql'))
     await db.exec(sql('003_menu.sql'))
     await db.exec(sql('004_table.sql'))
+    await db.exec(sql('005_pineapple_fried_rice.sql'))
     expect(await anonCanExecute('public.rls_auto_enable()')).toBe(false)
     await db.exec('drop function public.rls_auto_enable()')
   })
 
   it('rolls back cleanly', async () => {
+    await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('004_table.down.sql'))
     await db.exec(sql('003_menu.down.sql'))
     await db.exec(sql('002_occupation.down.sql'))

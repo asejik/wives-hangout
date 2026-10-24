@@ -190,3 +190,11 @@
 - **Code reverted:** no table field, no table on the pass or confirm step; `/api/menu-choose` calls the 4-argument `choose_meal` again; `/api/menu-table` and `parseTable` removed; the Sheet's Meals columns are back to `full_name, dish, code, phone, chosen_at`; pass text "show it to a server" (not "at your table").
 - **Database unchanged (on purpose):** migration 004 stays applied. `table_no` defaults to '' and the 4-argument function from 003 still exists, so no migration or rollback was needed. Production had 0 meals at the time.
 - **Checks:** typecheck, lint clean; 155 unit tests; Playwright menu journey passed against the live database (dev slug); build OK; venue absent.
+
+## 2026-10-24 · Pineapple Fried Rice added to menu (10 plates)
+- **Builder/church request:** additional menu item "Pineapple Fried Rice" - 10 Plates.
+- **Migration `005_pineapple_fried_rice.sql` (+ down):** ADDITIVE and live-safe; inserts `pineapple-fried-rice` ('Pineapple Fried Rice', position 13, quantity 10, remaining 10) for both `wives-hangout-2026` and `wives-hangout-2026-dev`.
+- **Live Supabase applied:** both production and dev updated; verified 13 dishes, 225 total plates, 225 remaining.
+- **Apps Script & Google Sheet:** `apps-script/Code.gs` is dynamic (`syncMeals` reads `menu_status` and regenerates the Meal totals snapshot tab + sum); automatically reflects 13 dishes and 225 plates on sync.
+- **Checks:** typecheck, lint clean; 156 unit tests (including migration 005 seeding, ordering, choosing, and rollback); build OK.
+
