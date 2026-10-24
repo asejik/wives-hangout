@@ -59,7 +59,7 @@ export function emailRetryBatch(event: string, limit: number) {
 // Meal selection (migration 003).
 export type MenuLookupResult = { status: 'not_found' } | { status: 'found'; full_name: string; choice: MealChoice | null }
 export type ChooseMealResult =
-  | { status: 'not_found' | 'sold_out' | 'unknown_item' | 'invalid_seat' }
+  | { status: 'not_found' | 'sold_out' | 'unknown_item' | 'invalid_seat' | 'seat_taken' }
   | { status: 'created' | 'already_chosen'; full_name: string; choice: MealChoice }
 
 export function menuStatus(event: string) {
@@ -75,7 +75,7 @@ export function chooseMeal(event: string, who: Who, item: string, seat: string) 
 }
 
 export type SetSeatResult =
-  | { status: 'not_found' | 'no_choice' | 'invalid_seat' }
+  | { status: 'not_found' | 'no_choice' | 'invalid_seat' | 'seat_taken' }
   | { status: 'updated'; full_name: string; choice: MealChoice }
 
 /** Add or correct the seat number on her existing choice (migration 006). */

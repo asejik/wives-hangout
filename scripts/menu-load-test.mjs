@@ -42,7 +42,7 @@ console.log(`Registered: ${ok}/${n}`)
 
 await rest(`menu_items?event=eq.${DEV}&item_id=eq.${item}`, { method: 'PATCH', body: JSON.stringify({ remaining: stock }) })
 console.log(`Dev stock of ${item} set to ${stock}. ${n} people choose it at the same moment…`)
-const results = await Promise.all(phones.map((phone, i) => post('/api/menu-choose', { who: phone, item, seat: String(1 + (i % 20)) })))
+const results = await Promise.all(phones.map((phone, i) => post('/api/menu-choose', { who: phone, item, seat: String(1 + i) })))
 const by = results.reduce((m, r) => ((m[`${r.http} ${r.body.status}`] = (m[`${r.http} ${r.body.status}`] ?? 0) + 1), m), {})
 const ms = results.map((r) => r.ms).sort((a, b) => a - b)
 const [{ remaining }] = await (await rest(`menu_items?event=eq.${DEV}&item_id=eq.${item}&select=remaining`)).json()

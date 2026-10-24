@@ -206,3 +206,23 @@
 - **Deploy order:** (1) builder runs 006; (2) Playwright + burst test (dev slug); (3) builder re-pastes Code.gs; (4) push.
 - **Builder ran 006.** Verified live: `set_meal_seat` and the seat `choose_meal` respond (`invalid_seat` for "VIP"), `set_meal_table` gone, `seat_no` column present. Playwright menu journey (seat required, "Seat 7" on confirm and pass, corrected to B12) passed against the live database (dev slug). Burst test: 30 people, 10 plates → 10 created / 20 sold_out / remaining 0 / 10 unique codes; winner's retry `already_chosen`. Dev rows left: 0. Production: 0 meals, 225/225.
 - **Pushed and LIVE** (`a57a285`). Production: `/api/menu-choose` without a seat → `invalid_seat` (×3), with seat "27" → passes validation (`not_found` for an unregistered probe phone); `/api/menu-seat` live; the menu bundle contains "Your seat number"; smoke: all checks passed. Builder to re-paste Code.gs for the Sheet's seat column.
+
+## 2026-10-24 · Enforce unique seat selection & clear choices (Migration 007)
+- **Problem:** Multiple attendees were able to choose the same seat number (e.g. seat 10 had 4 people, seat 20 had 3 people).
+- **User Request:** Ensure each seat number can only be chosen by 1 person. Then clear the database (`meal_choices`) and reset remaining plates so people can re-choose.
+- **Migration `007_seat_unique.sql` (+ down):**
+  - Clears `meal_choices` and resets `remaining = quantity` (225 total plates).
+  - Creates partial unique index `meal_choices_event_seat_no_idx` on `(event, seat_no) where seat_no <> ''` (per event, ignoring legacy empty seats).
+  - Updates `choose_meal`: checks if seat is already taken (`status: 'seat_taken'`) and catches unique violation to roll back atomically without decrementing plates.
+  - Updates `set_meal_seat`: rejects updates to a seat already taken by someone else with `status: 'seat_taken'`, while allowing an attendee to re-save her own seat.
+- **Frontend (`src/menu/MenuPage.tsx`):**
+  - Handles `seat_taken` status in both `confirm()` (initial meal choice) and `saveSeat()` (updating seat number), displaying an inline message prompting the attendee to choose another seat.
+- **Database Cleared & Verified:**
+  - Production `meal_choices`: cleared from 16 choices down to 0 choices.
+  - Production `menu_items`: remaining plate counts restored to full (225/225).
+  - Registrations remain completely untouched (211 registrations).
+- **Checks:**
+  - Typecheck (`tsc -b`): Clean.
+  - Lint (`oxlint`): 0 warnings, 0 errors across 76 files with 116 rules.
+  - Unit tests (`vitest`): 165/165 passed across 14 test files (including 4 new tests for 007 seat uniqueness, plate protection, cross-event isolation, and rollback).
+  - Build (`npm run build`): Clean SSR pre-render and bundle build.

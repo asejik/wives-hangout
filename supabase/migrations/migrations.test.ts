@@ -34,7 +34,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   // Fresh schema per test: roll back, then migrate (also proves the pair round-trips).
   await db.exec(sql('005_pineapple_fried_rice.down.sql'))
-  await db.exec(sql('003_menu.down.sql')) // also removes 004's and 006's functions
+  await db.exec(sql('003_menu.down.sql')) // also removes 004's, 006's and 007's functions
   await db.exec(sql('001_init.down.sql'))
   await db.exec(sql('001_init.sql'))
   await db.exec(sql('002_occupation.sql'))
@@ -42,6 +42,7 @@ beforeEach(async () => {
   await db.exec(sql('004_table.sql'))
   await db.exec(sql('005_pineapple_fried_rice.sql'))
   await db.exec(sql('006_seat.sql'))
+  await db.exec(sql('007_seat_unique.sql'))
 })
 
 describe('001_init: registrations', () => {
@@ -317,6 +318,7 @@ describe('003_menu', () => {
     const rls = await rpc<{ relrowsecurity: boolean }>(`select relrowsecurity from pg_class where relname in ('menu_items', 'meal_choices')`)
     expect(rls.every((r) => r.relrowsecurity)).toBe(true)
     await register(person('08012345678', 'funmi@example.com'))
+    await db.exec(sql('007_seat_unique.down.sql'))
     await db.exec(sql('006_seat.down.sql'))
     await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('004_table.down.sql'))
@@ -372,11 +374,11 @@ describe('006_seat (on top of 004_table)', () => {
     for (const [i, full_name] of names.entries()) await register(person(`0801111111${i}`, `${i}@example.com`, { full_name }))
     await choose5('08011111110', 'fried-rice', '10')
     await choose5('08011111111', 'fried-rice', '2')
-    await choose5('08011111112', 'asun-rice', '10')
+    await choose5('08011111112', 'asun-rice', '12')
     await choose5('08011111114', 'asun-rice', 'B3')
     await rpc('select public.choose_meal($1, $2, $3, $4)', [EVENT, '08011111113', '', 'asun-rice'])
     const rows = await rpc<{ seat_no: string; full_name: string }>(`select seat_no, full_name from public.meal_list($1)`, [EVENT])
-    expect(rows.map((r) => `${r.seat_no}:${r.full_name}`)).toEqual(['2:Ada A', '10:Bisi B', '10:Cee C', 'B3:Eve E', ':Dee D'])
+    expect(rows.map((r) => `${r.seat_no}:${r.full_name}`)).toEqual(['2:Ada A', '10:Bisi B', '12:Cee C', 'B3:Eve E', ':Dee D'])
   })
 
   it('is locked down', async () => {
@@ -389,6 +391,7 @@ describe('006_seat (on top of 004_table)', () => {
   it('rolls back to 004 (choices kept, seats cleared), and forward again', async () => {
     await register(person('08012345678', 'funmi@example.com'))
     await choose5('08012345678', 'fried-rice', 'B5')
+    await db.exec(sql('007_seat_unique.down.sql'))
     await db.exec(sql('006_seat.down.sql'))
     await db.exec(sql('004_table.sql'))
     expect(await rpc(`select 1 from information_schema.columns where table_name = 'meal_choices' and column_name = 'seat_no'`)).toHaveLength(0)
@@ -398,6 +401,53 @@ describe('006_seat (on top of 004_table)', () => {
       .toMatchObject({ status: 'already_chosen', choice: { table_no: '' } })
     await db.exec(sql('006_seat.sql'))
     expect(await rpc(`select * from public.meal_list($1)`, [EVENT])).toHaveLength(1)
+  })
+})
+
+describe('007_seat_unique', () => {
+  const choose5 = async (phone: string, item: string, seat: string, event = EVENT) =>
+    (await rpc<{ r: Record<string, any> }>('select public.choose_meal($1, $2, $3, $4, $5) as r', [event, phone, '', item, seat]))[0].r
+  const setSeat = async (who: { phone?: string; email?: string }, seat: string) =>
+    (await rpc<{ r: Record<string, any> }>('select public.set_meal_seat($1, $2, $3, $4) as r', [EVENT, who.phone ?? '', who.email ?? '', seat]))[0].r
+  const remaining = async (item: string) =>
+    (await rpc<{ remaining: number }>(`select remaining from public.menu_items where event = $1 and item_id = $2`, [EVENT, item]))[0].remaining
+
+  it('refuses when a seat is already taken by another person (choose_meal), without taking a plate', async () => {
+    await register(person('08011111111', 'a@example.com'))
+    await register(person('08022222222', 'b@example.com'))
+    expect((await choose5('08011111111', 'fried-rice', '10')).status).toBe('created')
+    expect(await choose5('08022222222', 'fried-rice', '10')).toEqual({ status: 'seat_taken' })
+    expect(await remaining('fried-rice')).toBe(9) // plate not taken
+    // she can pick a different seat
+    expect((await choose5('08022222222', 'fried-rice', '11')).status).toBe('created')
+    expect(await remaining('fried-rice')).toBe(8)
+  })
+
+  it('refuses setting a seat to one already taken by someone else (set_meal_seat), but allows keeping her own seat', async () => {
+    await register(person('08011111111', 'a@example.com'))
+    await register(person('08022222222', 'b@example.com'))
+    await choose5('08011111111', 'fried-rice', '10')
+    await choose5('08022222222', 'asun-rice', '11')
+    expect(await setSeat({ phone: '08022222222' }, '10')).toEqual({ status: 'seat_taken' })
+    expect(await setSeat({ phone: '08022222222' }, '11')).toMatchObject({ status: 'updated' })
+  })
+
+  it('allows duplicate seats across different events (prod vs dev)', async () => {
+    await register(person('08011111111', 'a@example.com'), EVENT)
+    await register(person('08011111111', 'a@example.com'), DEV)
+    expect((await choose5('08011111111', 'fried-rice', '10', EVENT)).status).toBe('created')
+    expect((await choose5('08011111111', 'fried-rice', '10', DEV)).status).toBe('created')
+  })
+
+  it('rolls back to 006 (unique index dropped, duplicate seats allowed in 006)', async () => {
+    await db.exec(sql('007_seat_unique.down.sql'))
+    expect(await rpc(`select 1 from pg_indexes where indexname = 'meal_choices_event_seat_no_idx'`)).toHaveLength(0)
+    await register(person('08011111111', 'a@example.com'))
+    await register(person('08022222222', 'b@example.com'))
+    expect((await choose5('08011111111', 'fried-rice', '10')).status).toBe('created')
+    expect((await choose5('08022222222', 'fried-rice', '10')).status).toBe('created')
+    await db.exec(sql('007_seat_unique.sql'))
+    expect(await rpc(`select 1 from pg_indexes where indexname = 'meal_choices_event_seat_no_idx'`)).toHaveLength(1)
   })
 })
 
@@ -437,6 +487,7 @@ describe('001_init: lockdown', () => {
   })
 
   it('rolls back cleanly', async () => {
+    await db.exec(sql('007_seat_unique.down.sql'))
     await db.exec(sql('006_seat.down.sql'))
     await db.exec(sql('005_pineapple_fried_rice.down.sql'))
     await db.exec(sql('004_table.down.sql'))

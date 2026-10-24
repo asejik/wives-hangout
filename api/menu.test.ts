@@ -94,6 +94,8 @@ describe('POST /api/menu-choose', () => {
     expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: '14' })).body).toMatchObject({ status: 'sold_out', items })
     chooseMeal.mockResolvedValue({ status: 'already_chosen', full_name: 'F A', choice })
     expect((await call(choose, 'POST', { who: '08012345678', item: 'asun-rice', seat: '14' })).body).toMatchObject({ status: 'already_chosen', choice })
+    chooseMeal.mockResolvedValue({ status: 'seat_taken' })
+    expect((await call(choose, 'POST', { who: '08012345678', item: 'fried-rice', seat: '14' })).body).toMatchObject({ status: 'seat_taken', items })
   })
   it('refuses outside the window (403) and bad input (400), without touching the database', async () => {
     process.env.MENU_CLOSES_AT = '2020-01-01T00:00:00+01:00'
@@ -126,6 +128,8 @@ describe('POST /api/menu-seat', () => {
   it('passes through no_choice / not_found, and rejects a bad seat or a closed window', async () => {
     setMealSeat.mockResolvedValue({ status: 'no_choice' })
     expect((await call(seat, 'POST', { who: '08012345678', seat: '3' })).body).toEqual({ status: 'no_choice' })
+    setMealSeat.mockResolvedValue({ status: 'seat_taken' })
+    expect((await call(seat, 'POST', { who: '08012345678', seat: '14' })).body).toEqual({ status: 'seat_taken' })
     expect((await call(seat, 'POST', { who: '08012345678', seat: 'VIP' })).statusCode).toBe(400)
     process.env.MENU_CLOSES_AT = '2020-01-01T00:00:00+01:00'
     expect((await call(seat, 'POST', { who: '08012345678', seat: '3' })).statusCode).toBe(403)

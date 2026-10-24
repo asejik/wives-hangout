@@ -68,6 +68,8 @@ export function MenuPage() {
         setMe({ ...me, fullName: body.full_name, choice: body.choice })
         setEditingSeat(false)
         setNotice(`Seat number saved: ${t}.`)
+      } else if (body.status === 'seat_taken') {
+        setSeatError(`Seat ${t} is already taken. Please enter a different seat.`)
       } else if (http === 403) {
         setSeatError('Meal selection has closed. Please tell a host your seat number.')
       } else {
@@ -141,6 +143,9 @@ export function MenuPage() {
         setMe({ ...me, fullName: body.full_name, choice: body.choice })
         setPass({ fullName: body.full_name, choice: body.choice })
         if (body.status === 'already_chosen') setNotice('You had already chosen your meal. Here it is.')
+      } else if (body.status === 'seat_taken') {
+        setSeatError(`Seat ${parseSeat(seat)} is already taken. Please enter a different seat.`)
+        document.getElementById('seat')?.focus()
       } else if (body.status === 'invalid_seat') {
         setSeatError('Enter your seat number first (e.g. 27 or B12).')
       } else if (body.status === 'sold_out') {
