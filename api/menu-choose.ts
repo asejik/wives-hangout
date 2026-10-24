@@ -1,5 +1,5 @@
 import type { ApiRequest, ApiResponse } from './_lib/http.js'
-import { parseTable, parseWho } from '../shared/menu.js'
+import { parseWho } from '../shared/menu.js'
 import { checkConfig, scrub } from './_lib/config.js'
 import { chooseMeal, menuStatus } from './_lib/db.js'
 import { menuWindow, withinMenuRateLimit } from './_lib/menu-window.js'
@@ -17,15 +17,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const who = parseWho(body.who)
   const item = typeof body.item === 'string' && /^[a-z0-9-]{1,40}$/.test(body.item) ? body.item : null
   if (!who || !item) return res.status(400).json({ status: 'invalid' })
-  // Required since 2026-10-24 so servers can find her (plain numbers, e.g. "14").
-  const table = parseTable(body.table)
-  if (!table) return res.status(400).json({ status: 'invalid_table' })
   if (!(await withinMenuRateLimit(req))) return res.status(429).json({ status: 'rate_limited' })
 
   const started = Date.now()
   try {
-    const result = await chooseMeal(process.env.EVENT_SLUG!, who, item, table)
-    console.log(JSON.stringify({ evt: 'menu.choose', status: result.status, item, table, ms: Date.now() - started }))
+    const result = await chooseMeal(process.env.EVENT_SLUG!, who, item)
+    console.log(JSON.stringify({ evt: 'menu.choose', status: result.status, item, ms: Date.now() - started }))
     const items = await menuStatus(process.env.EVENT_SLUG!).catch(() => null)
     return res.status(200).json({ ...result, items })
   } catch (err) {

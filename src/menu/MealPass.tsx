@@ -13,10 +13,6 @@ export function MealPass({ fullName, choice }: { fullName: string; choice: MealC
       <div className="px-5 pb-5 pt-4">
         <Sparkle size={28} className="mx-auto animate-sparkle-in text-magenta" />
         <p className="mt-2 font-text text-body font-semibold text-ink [overflow-wrap:anywhere]">{fullName}</p>
-        <p className="mt-3 font-caps text-eyebrow font-semibold uppercase text-muted">Table</p>
-        <p className={`font-caps font-semibold ${choice.table_no ? 'text-h1 text-burgundy' : 'text-body text-error'}`}>
-          {choice.table_no || 'Not given yet'}
-        </p>
         <p className="mt-3 font-caps text-eyebrow font-semibold uppercase text-muted">Your meal</p>
         <p className="mt-1 font-display text-h2 font-semibold text-burgundy">{choice.item_name}</p>
         <p className="mt-4 font-caps text-eyebrow font-semibold uppercase text-muted">Code</p>
@@ -27,7 +23,7 @@ export function MealPass({ fullName, choice }: { fullName: string; choice: MealC
       </div>
       <p className="flex items-start gap-2.5 bg-petal px-4 py-3 text-left font-text text-small font-semibold text-ink">
         <Camera aria-hidden size={20} strokeWidth={2} className="mt-0.5 shrink-0 text-magenta-700" />
-        <span>Take a screenshot now and show it to the server at your table.</span>
+        <span>Take a screenshot now and show it to a server.</span>
       </p>
     </div>
   )

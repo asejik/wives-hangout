@@ -184,3 +184,9 @@
 
 ## 2026-10-24 · Builder's test meal reset (with table)
 - At the builder's request, the test choice for one phone (Fried rice, 8F3T, table 12) was deleted from `meal_choices`; the plate returned (9 → 10); registration kept. Production: 0 meals, 215/215.
+
+## 2026-10-24 · Table number withdrawn (REVERT, code only)
+- **Management:** there won't be enough tables for everyone, so back to the original flow: phone/email → choose.
+- **Code reverted:** no table field, no table on the pass or confirm step; `/api/menu-choose` calls the 4-argument `choose_meal` again; `/api/menu-table` and `parseTable` removed; the Sheet's Meals columns are back to `full_name, dish, code, phone, chosen_at`; pass text "show it to a server" (not "at your table").
+- **Database unchanged (on purpose):** migration 004 stays applied. `table_no` defaults to '' and the 4-argument function from 003 still exists, so no migration or rollback was needed. Production had 0 meals at the time.
+- **Checks:** typecheck, lint clean; 155 unit tests; Playwright menu journey passed against the live database (dev slug); build OK; venue absent.

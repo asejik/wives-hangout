@@ -1,7 +1,7 @@
 import { CircleAlert, UtensilsCrossed } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { EVENT } from '../../shared/event'
-import { parseTable, parseWho, WHO_HINT, type MealChoice, type MenuItem } from '../../shared/menu'
+import { parseWho, WHO_HINT, type MealChoice, type MenuItem } from '../../shared/menu'
 import { Button } from '../components/Button'
 import { CompactHero } from '../components/Hero'
 import { Sparkle } from '../components/Sparkle'
@@ -39,47 +39,6 @@ export function MenuPage() {
   const [choosing, setChoosing] = useState(false)
   const [notice, setNotice] = useState('')
   const [pass, setPass] = useState<{ fullName: string; choice: MealChoice } | null>(null)
-  const [table, setTable] = useState('')
-  const [tableError, setTableError] = useState('')
-  const [editingTable, setEditingTable] = useState(false)
-  const [savingTable, setSavingTable] = useState(false)
-
-  // Before choosing, the table number is required (plain numbers, e.g. 14).
-  const startChoosing = (item: MenuItem) => {
-    if (!parseTable(table)) {
-      setTableError('Enter your table number first (e.g. 14).')
-      document.getElementById('table')?.focus()
-      return
-    }
-    setTableError('')
-    setPending(item)
-  }
-
-  // Add or correct the table on an existing choice (the meal itself never changes).
-  const saveTable = async () => {
-    if (!me) return
-    const t = parseTable(table)
-    if (!t) return setTableError('Enter your table number (e.g. 14).')
-    setTableError('')
-    setSavingTable(true)
-    try {
-      const { http, body } = await post('/api/menu-table', { who: me.who, table: t })
-      if (body.status === 'updated') {
-        setMe({ ...me, fullName: body.full_name, choice: body.choice })
-        setEditingTable(false)
-        setNotice(`Table number saved: ${t}.`)
-      } else if (http === 403) {
-        setTableError('Meal selection has closed. Please tell a host your table number.')
-      } else {
-        setTableError(http === 429 ? 'Too many tries from this network. Please wait a few minutes.' : "We couldn't save it. Please try again.")
-      }
-    } catch {
-      setTableError('No connection. Please try again.')
-    } finally {
-      setSavingTable(false)
-    }
-  }
-
   // Live counts: poll while the page is visible (keeps the last counts if a poll fails).
   useEffect(() => {
     const load = () =>
@@ -135,14 +94,12 @@ export function MenuPage() {
     setChoosing(true)
     setNotice('')
     try {
-      const { http, body } = await post('/api/menu-choose', { who: me.who, item: pending.item_id, table: parseTable(table) })
+      const { http, body } = await post('/api/menu-choose', { who: me.who, item: pending.item_id })
       if (Array.isArray(body.items)) setItems(body.items)
       if (body.status === 'created' || body.status === 'already_chosen') {
         setMe({ ...me, fullName: body.full_name, choice: body.choice })
         setPass({ fullName: body.full_name, choice: body.choice })
         if (body.status === 'already_chosen') setNotice('You had already chosen your meal. Here it is.')
-      } else if (body.status === 'invalid_table') {
-        setTableError('Enter your table number first (e.g. 14).')
       } else if (body.status === 'sold_out') {
         setNotice(`Sorry, ${pending.name} just finished. Please choose another dish.`)
       } else if (http === 403) {
@@ -192,37 +149,10 @@ export function MenuPage() {
               {me.choice ? (
                 <div className="mt-4">
                   <MealPass fullName={me.fullName} choice={me.choice} />
-                  {state === 'open' && (me.choice.table_no === '' || editingTable ? (
-                    <TableField
-                      label={me.choice.table_no ? 'Change your table number' : 'Add your table number'}
-                      value={table}
-                      error={tableError}
-                      onChange={setTable}
-                      action={
-                        <Button type="button" loading={savingTable} className="mt-3 w-full" onClick={() => void saveTable()}>
-                          {savingTable ? 'Saving…' : 'Save table number'}
-                        </Button>
-                      }
-                    />
-                  ) : (
-                    <p className="mt-3 text-center font-text text-small text-muted">
-                      Moved table?{' '}
-                      <button
-                        type="button"
-                        className="min-h-11 font-semibold text-magenta-700 underline underline-offset-2"
-                        onClick={() => { setTable(me.choice?.table_no ?? ''); setEditingTable(true) }}
-                      >
-                        Change table number
-                      </button>
-                    </p>
-                  ))}
                 </div>
-              ) : state === 'open' ? (
-                <>
-                  <TableField label="Your table number" value={table} error={tableError} onChange={setTable} />
-                  <p className="mt-3 font-text text-body text-ink">Then tap the dish you want below.</p>
-                </>
-              ) : null}
+              ) : (
+                <p className="mt-2 font-text text-body text-ink">{state === 'open' ? 'Now tap the dish you want below.' : ''}</p>
+              )}
             </div>
           ) : (
             <form noValidate onSubmit={(e) => { e.preventDefault(); void find(whoInput) }}>
@@ -278,7 +208,7 @@ export function MenuPage() {
                   {canChoose && !finished && (
                     <button
                       type="button"
-                      onClick={() => startChoosing(item)}
+                      onClick={() => setPending(item)}
                       className="min-h-11 shrink-0 rounded-pill bg-burgundy px-5 font-caps text-button font-semibold uppercase text-white transition-colors duration-[var(--dur-fast)] hover:bg-wine focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-magenta"
                     >
                       Choose
@@ -299,7 +229,6 @@ export function MenuPage() {
           <div className="px-5 py-6 text-center">
             <p className="font-text text-body text-ink">Choose this meal?</p>
             <p className="mt-2 font-display text-h2 font-semibold text-burgundy">{pending.name}</p>
-            <p className="mt-1 font-text text-body font-semibold text-ink">Table {parseTable(table)}</p>
             <p className="mt-2 font-text text-small text-muted">You can't change it after this.</p>
             <div className="mt-5 grid gap-2.5">
               <Button data-autofocus loading={choosing} onClick={() => void confirm()}>
@@ -328,38 +257,6 @@ export function MenuPage() {
         {EVENT.host} · {EVENT.name}
       </footer>
     </main>
-  )
-}
-
-function TableField({ label, value, error, onChange, action }: {
-  label: string; value: string; error: string; onChange: (v: string) => void; action?: React.ReactNode
-}) {
-  return (
-    <div className="mt-4">
-      <label htmlFor="table" className={labelClass}>{label}</label>
-      <input
-        id="table"
-        value={value}
-        onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 3))}
-        inputMode="numeric"
-        pattern="[0-9]*"
-        maxLength={3}
-        autoComplete="off"
-        placeholder="e.g. 14"
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? 'table-error' : 'table-hint'}
-        className={controlClass(!!error)}
-      />
-      {error ? (
-        <p id="table-error" role="alert" className="mt-2 flex items-start gap-1.5 font-text text-small font-semibold text-error">
-          <CircleAlert aria-hidden size={16} strokeWidth={2.5} className="mt-0.5 shrink-0" />
-          {error}
-        </p>
-      ) : (
-        <p id="table-hint" className="mt-2 font-text text-small text-muted">The number on your table, so the servers can find you.</p>
-      )}
-      {action}
-    </div>
   )
 }
 

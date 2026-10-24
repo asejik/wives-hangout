@@ -240,10 +240,9 @@ describe('syncMeals (Apps Script)', () => {
     const g = load({ meals, menu })
     expect(g.syncMeals()).toBe(2)
     const m = g.tabs.get('Meals')!
-    expect(m[0]).toEqual(['table_no', 'full_name', 'dish', 'code', 'phone', 'chosen_at'])
-    expect(m[1]).toEqual([3, 'Funmi A', 'Fried rice', '2E45', '08012345678', '2026-10-23 21:00:00'])
-    expect(m[2][0]).toBe('') // no table given yet
-    expect(m[2][1]).toBe('=EVIL()') // stored as text, not a formula
+    expect(m[0]).toEqual(['full_name', 'dish', 'code', 'phone', 'chosen_at'])
+    expect(m[1]).toEqual(['Funmi A', 'Fried rice', '2E45', '08012345678', '2026-10-23 21:00:00'])
+    expect(m[2][0]).toBe('=EVIL()') // stored as text, not a formula
     const totals = g.tabs.get('Meal totals')!
     expect(totals[1]).toEqual(['Fried rice', 10, 1, 9])
     expect(totals.at(-1)).toEqual(['TOTAL', 20, 2, 18])
